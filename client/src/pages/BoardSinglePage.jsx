@@ -5,6 +5,7 @@ import Column from "../components/Main/Column.jsx";
 import Button from "../components/Button.jsx";
 import { useDispatch } from "react-redux";
 import { openForm } from "../redux/slices/formsSlice.js";
+import Loader from "../components/Loader.jsx";
 
 const BoardSinglePage = () => {
     const dispatch = useDispatch();
@@ -21,6 +22,7 @@ const BoardSinglePage = () => {
                 <Column title="COLUMN" tasks={null} />
                 <Column title="COLUMN" tasks={null} />
                 <Button className="addcolumn-btn" clickHandler={openBoardForm}>+ New Column</Button>
+                {/* <Loader variant="big" /> */}
             </div>
         </>
     );

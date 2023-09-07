@@ -3,6 +3,7 @@ import AuthForm from "../components/Forms/AuthForm.jsx";
 import Control from "../components/Control.jsx";
 import { Link } from "react-router-dom";
 import Button from "../components/Button.jsx";
+import Loader from "../components/Loader.jsx";
 
 const RegisterPage = () => {
     return (

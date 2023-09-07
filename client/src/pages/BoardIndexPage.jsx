@@ -11,11 +11,18 @@ import { Routes, Route, Navigate } from "react-router";
 import BoardSinglePage from "./BoardSinglePage.jsx";
 
 const BoardIndexPage = () => {
-    const boards = [1];
+    const boards = [];
     if (boards.length) {
         return <Navigate to="/1" />
     } else {
-        return <Header />;
+        return (
+            <>
+                <Header />
+                <div className="main-box">
+                    Tasks are not found
+                </div>
+            </>
+        );
     }
 }
 
