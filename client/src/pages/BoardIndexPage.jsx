@@ -9,11 +9,13 @@ import TaskForm from "../components/Forms/TaskForm.jsx";
 import TaskView from "../components/TaskView.jsx";
 import { Routes, Route, Navigate } from "react-router";
 import BoardSinglePage from "./BoardSinglePage.jsx";
+import { useSelector } from "react-redux";
 
 const BoardIndexPage = () => {
-    const boards = [];
+    const boards = useSelector(state => state.boards.items);
+
     if (boards.length) {
-        return <Navigate to="/1" />
+        return <Navigate to={`${boards[0].id}`} />
     } else {
         return (
             <>

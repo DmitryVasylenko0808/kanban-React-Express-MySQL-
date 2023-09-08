@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "../axios";
 import Button from "./Button.jsx";
 import ContextMenu from "./ContextMenu.jsx";
 import Control from "./Control.jsx";
@@ -7,20 +8,57 @@ import Subtask from "./Subtask.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { selectTheme } from "../redux/slices/themeSlice.js";
 import { closeForm, openForm } from "../redux/slices/formsSlice.js";
+import Loader from "./Loader.jsx";
 
-const TaskView = ({ id }) => {
-    const theme = useSelector(selectTheme);
+const TaskView = ({ boardId, taskId }) => {
     const dispatch = useDispatch();
+    const theme = useSelector(selectTheme);
+    const [task, setTask] = useState(null);
+    const [columns, setColumns] = useState([]);
+    const [requestStatus, setRequestStatus] = useState('idle');
 
+    const completedSubtasks = task && task.subtasks.filter(s => s.status === 1);
     const classNameForm = `form absolute ${theme}`;
 
+    useEffect(() => {
+        getTask();
+    }, []);
+
+    const getTask = async () => {
+        try {
+            setRequestStatus('loading')
+            const res = await axios.get(`/tasks/${boardId}/${taskId}`);
+            const { data, columns } = res.data;
+            setTask(data);
+            setColumns(columns);
+            setRequestStatus('succeeded');
+        } catch (err) {
+            const { message } = err.response.data;
+            alert(message);
+            dispatch(closeForm('taskView'));
+        }
+    }
+
     const openEditTaskForm = () => {
-        dispatch(openForm({ form: "taskForm", variant: 'edit' }));
+        dispatch(openForm({ 
+            form: "taskForm", 
+            variant: 'edit', 
+            boardId,
+            taskId 
+        }));
     }
 
     const onCloseHandler = e => {
         e.preventDefault();
         dispatch(closeForm('taskView'));
+    }
+
+    if (requestStatus === 'loading' || requestStatus === 'idle') {
+        return (
+            <form className={classNameForm}>
+                <Loader variant="big" />
+            </form>
+        )
     }
 
     return (
@@ -35,8 +73,7 @@ const TaskView = ({ id }) => {
             </div>
 
             <div className="form-heading">
-                Task Title title title edita distinctio quo beatae est nulla corporis voluptatibus ex aperiam eligendi!
-                amet consectetur adipisicing elit. Commodi autem ipsum dolores at quibusdam, amet consectetur adipisicing elit. Commodi autem ipsum dolores at quibusdam.
+                {task.title}
                 <ContextMenu variant="form">
                     <Button
                         className="context-menu_btn"
@@ -60,30 +97,21 @@ const TaskView = ({ id }) => {
             </div>
 
             <p className="form__text">
-                Lorem ipsum dolor, sit amet consectetur adipisicing elit. Commodi autem ipsum dolores at quibusdam,
-                possimus nemo architecto veritatis incidunt expedita distinctio quo beatae est nulla corporis voluptatibus ex aperiam eligendi!
+                {task.desciption}
             </p>
 
             <div className="form-subtasks-checks">
-                <label for="" className="form__label">Subtasks (2 of 3)</label>
-                <Subtask
-                    title="Consectetur adipisicing elit. Commodi autem ipsum dolores at quibusdam"
-                    isChecked={true}
-                    id="item1"
-                    onToggle={null}
-                />
-                <Subtask
-                    title="Consectetur adipisicing elit. Commodi autem ipsum dolores at quibusdam"
-                    isChecked={true}
-                    id="item1"
-                    onToggle={null}
-                />
-                <Subtask
-                    title="Consectetur adipisicing elit. Commodi autem ipsum dolores at quibusdam"
-                    isChecked={false}
-                    id="item1"
-                    onToggle={null}
-                />
+                <label htmlFor="" className="form__label">
+                    {`Subtasks (${completedSubtasks.length} of ${task.subtasks.length})`}
+                </label>
+                {task.subtasks.map(s => 
+                    <Subtask
+                        title={s.title}
+                        isChecked={!!s.status}
+                        id={s.id}
+                        onToggle={null}
+                    />
+                )}
             </div>
 
             <Control
@@ -91,7 +119,7 @@ const TaskView = ({ id }) => {
                 id="status"
                 onChange={null}
                 placeholder="e.g. Take coffee break"
-                selectOptions={[{ value: "value", title: "Status value" }]}
+                selectOptions={columns}
             >
                 Current Status
             </Control>

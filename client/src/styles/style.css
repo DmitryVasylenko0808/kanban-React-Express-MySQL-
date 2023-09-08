@@ -74,7 +74,7 @@ body {
 .light .sidebar .sidebar-nav .sidebar-nav__link {
     color: #b1b1b1;
 }
-.light .sidebar .sidebar-nav .sidebar-nav__link:active {
+.light .sidebar .sidebar-nav .sidebar-nav__link.active {
     color: #ffffff;
 }
 .light .sidebar-theme {
@@ -230,12 +230,12 @@ body {
     color: #ffffffa3;
 }
 
-.sidebar-nav__link:active {
+.sidebar-nav__link.active {
     background-color: #7472db;
     color: #ffffff;
 }
 
-.sidebar-nav__link:active .sidebar-nav__box img {
+.sidebar-nav__link.active .sidebar-nav__box img {
     content: url(../assets/dark/table-list-solid-active.svg);
 }
 

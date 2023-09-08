@@ -6,12 +6,20 @@ import NavItem from "./NavItem.jsx";
 import { useDispatch } from "react-redux";
 import { openForm } from "../../redux/slices/formsSlice.js";
 
-const Sidebar = () => {
+const Sidebar = ({ boardsLinks }) => {
     const dispatch = useDispatch();
     const [hidden, setHidden] = useState(false);
 
+    console.log(boardsLinks);
+
+    let boardsCount = 0;
+    if (boardsLinks.length) {
+        boardsCount = boardsLinks.length && boardsLinks.length;
+    }
+
     let classNameBtnToggleHide = "sidebar-options__togglebtn"; 
     let altToggleHide;
+
     if (!hidden) {
         altToggleHide = "Hide Sidebar";
     } else {
@@ -32,11 +40,9 @@ const Sidebar = () => {
             {!hidden ? 
                 <div className="sidebar__box">
                     <h1 className="sidebar__logo">kanban</h1>
-                    <span className="sidebar__countboards">ALL BOARDS (3)</span>
+                    <span className="sidebar__countboards">ALL BOARDS {boardsCount}</span>
                     <NavBar>
-                        <NavItem to="" title="Platform Launch" />
-                        <NavItem to="" title="Platform Launch" />
-                        <NavItem to="" title="Platform Launch" />
+                        {boardsLinks.map(board => <NavItem to={board.id} title={board.title} key={board.id}/>)}
                     </NavBar>
                     <Button
                         className="sidebar-nav__addboard"

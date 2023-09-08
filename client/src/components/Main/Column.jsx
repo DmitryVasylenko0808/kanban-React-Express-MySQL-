@@ -3,38 +3,34 @@ import Task from "./Task.jsx";
 import { useDispatch } from "react-redux";
 import { openForm } from "../../redux/slices/formsSlice.js";
 
-const Column = ({ title, tasks }) => {
+const Column = ({ boardId, title, tasks }) => {
     const dispatch = useDispatch();
 
-    const openTaskView = () => {
-        dispatch(openForm({form: "taskView", variant: "add"}));
+    const openTaskView = (id) => {
+        console.log(id);
+        dispatch(openForm({ 
+            form: "taskView", 
+            variant: "add",
+            boardId, 
+            taskId: id 
+        }));
     }
 
     return (
         <div className="column">
             <div className="column-box">
                 <div className="column-box__circle"></div>
-                {title} (3)
+                {title} ({tasks.length})
             </div>
-
-            <Task
-                title="Task N"
-                subtasks={3}
-                completed={1}
-                onView={openTaskView}
-            />
-            <Task
-                title="Task N"
-                subtasks={3}
-                completed={1}
-                onView={openTaskView}
-            />
-            <Task
-                title="Task N"
-                subtasks={3}
-                completed={1}
-                onView={openTaskView}
-            />
+            {tasks.map(task =>
+                <Task
+                    title={task.task_title}
+                    subtasks={task.subtasks}
+                    completed={task.subtasks_completed}
+                    onView={() => openTaskView(task.id)}
+                    key={task.id}
+                />
+            )}
         </div>
     );
 }

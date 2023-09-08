@@ -5,7 +5,7 @@ import { openForm } from "../../redux/slices/formsSlice.js";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUser, logoutUser } from "../../redux/slices/userSlice.js";
 
-const Header = () => {
+const Header = ({ boardTitle = "" }) => {
     const dispatch = useDispatch();
     const user = useSelector(state => state.user.user);
 
@@ -23,7 +23,7 @@ const Header = () => {
 
     return (
         <div className="header">
-            <h2 className="header__todo">Platform Launch</h2>
+            <h2 className="header__todo">{boardTitle}</h2>
             <div className="header-box">
                 <Button className="addtask-btn" clickHandler={openTaskForm}>+ Add New Task</Button>
                 <ContextMenu variant="header">

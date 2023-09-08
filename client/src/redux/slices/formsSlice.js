@@ -8,14 +8,18 @@ const formsSlice = createSlice({
             boardForm: false,
             taskView: false
         },
-        variant: ''
+        variant: '',
+        boardId: null,
+        taskId: null
     },
     reducers: {
         openForm: (state, action) => {
-            const { form, variant } = action.payload;
+            const { form, variant, boardId, taskId } = action.payload;
             for (let key of Object.keys(state.forms)) {
                 if (key === form) {
                     state.forms[key] = true;
+                    state.boardId = boardId;
+                    state.taskId = taskId;
                 } else {
                     state.forms[key] = false;
                 }
@@ -29,6 +33,8 @@ const formsSlice = createSlice({
                 }
             }
             state.variant = '';
+            state.boardId = null;
+            state.taskId = null;
         }
     }
 });
@@ -37,5 +43,7 @@ export const { openForm, closeForm } = formsSlice.actions;
 
 export const selectForms = state => state.forms.forms;
 export const selectVariant = state => state.forms.variant;
+export const selectBoardId = state => state.forms.boardId;
+export const selectTaskId = state => state.forms.taskId;
 
 export default formsSlice.reducer;

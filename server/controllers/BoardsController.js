@@ -4,10 +4,10 @@ const DataBase = require('../db');
 class BoardsController {
     static async getAll(req, res) {
         try {
-            let sql = "SELECT `title` FROM `boards` WHERE `user_id` = ?";
+            let sql = "SELECT `id`, `title` FROM `boards` WHERE `user_id` = ?";
             const results = await DataBase.query(sql, [req.userId]);
             if (results.length === 0) {
-                return res.json({ success: false, message: 'Boards are not found' });
+                return res.status(404).json({ success: false, message: 'Boards are not found' });
             }
 
             const boards = results;
