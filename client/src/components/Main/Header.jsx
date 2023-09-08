@@ -1,11 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Button from "../Button.jsx";
 import ContextMenu from "../ContextMenu.jsx";
 import { openForm } from "../../redux/slices/formsSlice.js";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchUser, logoutUser } from "../../redux/slices/userSlice.js";
 
 const Header = () => {
     const dispatch = useDispatch();
+    const user = useSelector(state => state.user.user);
 
     const openTaskForm = () => {
         dispatch(openForm({form: "taskForm", variant: "add"}));
@@ -13,6 +15,10 @@ const Header = () => {
 
     const openEditBoardForm = () => {
         dispatch(openForm({form: "boardForm", variant: "edit"}));
+    }
+
+    const logoutUserHandler = () => {
+        dispatch(logoutUser());
     }
 
     return (
@@ -41,27 +47,30 @@ const Header = () => {
                     </Button>
                 </ContextMenu>
 
-                <div className="header-box">
-                    <Button
-                        className="login-btn"
-                        linkTo="/auth/login"
-                        imgSrc="./assets/dark/right-to-bracket-solid.svg"
-                        altSrc="Log In"
-                    >
-                        Log In
-                    </Button>
-                </div>
-                {/* <div className="header-box">
-                    <span className="login">usertest</span>
-                    <Button 
-                        className="logout-btn"
-                        imgSrc="./assets/dark/right-from-bracket-solid.svg"
-                        altSrc="Log Out"
-                        clickHandler={null}
-                    >
-                        Log Out
-                    </Button>
-                </div> */}
+                {!user 
+                    ? <div className="header-box">
+                        <Button
+                            className="login-btn"
+                            linkTo="/auth/login"
+                            imgSrc="./assets/dark/right-to-bracket-solid.svg"
+                            altSrc="Log In"
+                        >
+                            Log In
+                        </Button>
+                      </div>
+
+                    : <div className="header-box">
+                        <span className="login">{user.login}</span>
+                        <Button 
+                            className="logout-btn"
+                            imgSrc="./assets/dark/right-from-bracket-solid.svg"
+                            altSrc="Log Out"
+                            clickHandler={logoutUserHandler}
+                        >
+                            Log Out
+                        </Button>
+                      </div>
+                }
             </div>
         </div>
     );

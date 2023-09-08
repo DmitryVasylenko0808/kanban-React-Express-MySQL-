@@ -5,13 +5,21 @@ import BoardForm from "../components/Forms/BoardForm.jsx";
 import TaskForm from "../components/Forms/TaskForm.jsx";
 import TaskView from "../components/TaskView.jsx";
 import { Routes, Route, Outlet, Navigate } from "react-router";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { selectTheme } from "../redux/slices/themeSlice.js";
 import { selectForms } from "../redux/slices/formsSlice.js";
+import { fetchUser } from "../redux/slices/userSlice.js";
 
 const BoardsPage = () => {
+    const dispatch = useDispatch();
     const theme = useSelector(selectTheme);
     const formsShowed = useSelector(selectForms);
+
+    useEffect(() => {
+        if (localStorage.getItem('token')) {
+            dispatch(fetchUser());
+        }
+    }, []);
 
     const classNameApp = `app ${theme}`;
     const boards = [];

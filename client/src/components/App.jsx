@@ -1,15 +1,4 @@
 import React from "react";
-import Sidebar from "./SideBar/SideBar.jsx";
-import Header from "./Main/Header.jsx";
-import Button from "./Button.jsx";
-import Column from "./Main/Column.jsx";
-import BoardForm from "./Forms/BoardForm.jsx";
-import TaskForm from "./Forms/TaskForm.jsx";
-import TaskView from "./TaskView.jsx";
-import SwitchThemeBox from "./SwitchThemeBox.jsx";
-
-import AuthForm from "./Forms/AuthForm.jsx";
-import Control from "./Control.jsx";
 import { Link, Route, Routes } from "react-router-dom";
 import MainLayout from "./Layouts/MainLayout.jsx";
 import BoardSinglePage from "../pages/BoardSinglePage.jsx";

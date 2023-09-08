@@ -50,6 +50,20 @@ class UsersController {
             InternalError.error(res, e);
         }
     }
+
+    static async getMe(req, res) {
+        try {
+            const sql = "SELECT `id`, `login` FROM `user` WHERE `id` = ?";
+            const results = await DataBase.query(sql, [req.userId]);
+            if (results.length === 0) {
+                return res.status(404).json({ success: false, message: "This user doesn't exists" });
+            }
+
+            res.json({ ...results[0] });
+        } catch (e) {
+            InternalError.error(res, e);
+        }
+    }
 }
 
 module.exports = UsersController;
