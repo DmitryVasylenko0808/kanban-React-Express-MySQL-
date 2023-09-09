@@ -6,11 +6,8 @@ import NavItem from "./NavItem.jsx";
 import { useDispatch } from "react-redux";
 import { openForm } from "../../redux/slices/formsSlice.js";
 
-const Sidebar = ({ boardsLinks }) => {
+const Sidebar = ({ boardsLinks, onToggle, isHidden }) => {
     const dispatch = useDispatch();
-    const [hidden, setHidden] = useState(false);
-
-    console.log(boardsLinks);
 
     let boardsCount = 0;
     if (boardsLinks.length) {
@@ -19,8 +16,7 @@ const Sidebar = ({ boardsLinks }) => {
 
     let classNameBtnToggleHide = "sidebar-options__togglebtn"; 
     let altToggleHide;
-
-    if (!hidden) {
+    if (!isHidden) {
         altToggleHide = "Hide Sidebar";
     } else {
         classNameBtnToggleHide += " hidden";
@@ -28,16 +24,16 @@ const Sidebar = ({ boardsLinks }) => {
     }
 
     const openBoardForm = () => {
-        dispatch(openForm({form: "boardForm", variant: 'add'}));
-    }
-
-    const onHideHandler = () => {
-        setHidden(!hidden);
+        dispatch(openForm({
+            form: "boardForm", 
+            variant: 'add'
+        }));
+        //
     }
 
     return (
         <div className="sidebar">
-            {!hidden ? 
+            {!isHidden ? 
                 <div className="sidebar__box">
                     <h1 className="sidebar__logo">kanban</h1>
                     <span className="sidebar__countboards">ALL BOARDS {boardsCount}</span>
@@ -57,14 +53,14 @@ const Sidebar = ({ boardsLinks }) => {
             }
 
             <div className="sidebar-options">
-                {!hidden && <SwitchThemeBox />}
+                {!isHidden && <SwitchThemeBox />}
                 <Button
                     className={classNameBtnToggleHide}
                     imgSrc="./assets/dark/eye-slash-regular.svg"
                     altSrc={altToggleHide}
-                    clickHandler={onHideHandler}
+                    clickHandler={onToggle}
                 >
-                    {!hidden && "Hide Sidebar"}
+                    {!isHidden && "Hide Sidebar"}
                 </Button>
             </div>
         </div>

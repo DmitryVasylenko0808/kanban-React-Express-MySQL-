@@ -37,7 +37,7 @@ const BoardSinglePage = () => {
 
     return (
         <>
-            <Header boardTitle={board && board.title} />
+            <Header board={board && board} />
             <div className="columns">
                 {requestStatus === 'loading' 
                     ? <Loader variant="big" /> 

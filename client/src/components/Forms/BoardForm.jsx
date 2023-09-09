@@ -1,15 +1,20 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Button from "../Button.jsx";
 import Control from "../Control.jsx";
 import FormList from "./FormList.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { selectTheme } from "../../redux/slices/themeSlice.js";
 import { closeForm, selectVariant } from "../../redux/slices/formsSlice.js";
+import { createBoard } from "../../redux/slices/boardsSlice.js";
+import Loader from "../Loader.jsx";
 
-const BoardForm = ({ onSubmit }) => {
+const BoardForm = ({ boardId = null }) => {
+    const dispatch = useDispatch();
     const theme = useSelector(selectTheme);
     const variant = useSelector(selectVariant);
-    const dispatch = useDispatch();
+    const [boardName, setBoardName] = useState('');
+    const [categories, setCategories] = useState([]);
+    const [requestStatus, setRequestStatus] = useState('idle');
 
     const classNameForm = `form absolute ${theme}`;
 
@@ -22,13 +27,62 @@ const BoardForm = ({ onSubmit }) => {
         titleSubmitBtn = "Edit Board";
     }
 
+    useEffect(() => {
+        const categories = [
+            { value: '' },
+            { value: '' }
+        ];
+        setCategories(categories);
+    }, []);
+
+    const addBoard = async (e) => {
+        e.preventDefault();
+        setRequestStatus('loading');
+        try {
+            const data = {
+                title: boardName,
+                columns: categories.map(c => c.value)
+            };
+            await dispatch(createBoard(data));
+        } catch (err) {
+            alert('Error');
+        } finally {
+            setRequestStatus('idle');
+        }
+    }
+
+    const onChangeBoardName = e => {
+        setBoardName(e.target.value);
+    }
+
+    const addCategory = () => {
+        const newCategories = [...categories, { value: '' }];
+        setCategories(newCategories);
+    }
+
+    const deleteCategory = id => {
+        const newCategories = categories.filter((c, index) => index !== id);
+        setCategories(newCategories);
+    }
+
+    const onChangeCategory = (id, value) => {
+        const newCategories = categories.map((c, index) => {
+            if (index === id) {
+                return { ...c, value }
+            } else {
+                return c;
+            }
+        });
+        setCategories(newCategories);
+    }
+
     const onCloseHandler = e => {
         e.preventDefault();
         dispatch(closeForm('boardForm'));
     }
 
     return (
-        <form className={classNameForm} onSubmit={onSubmit}>
+        <form className={classNameForm} onSubmit={addBoard}>
             <div className="form-box">
                 <Button
                     className="form__close"
@@ -45,7 +99,8 @@ const BoardForm = ({ onSubmit }) => {
             <Control
                 type="text"
                 id="board"
-                onChange={null}
+                value={boardName}
+                onChange={e => onChangeBoardName(e)}
                 placeholder="e.g. Wish Design"
             >
                 Board Name
@@ -53,16 +108,20 @@ const BoardForm = ({ onSubmit }) => {
 
             <FormList
                 type="boards"
-                items={[]}
-                onAdd={null}
-                OnDelete={null}
+                items={categories}
+                onAdd={addCategory}
+                onDeleteItem={deleteCategory}
+                onChangeItem={onChangeCategory}
             />
 
             <Button
                 type="submit"
                 className="form__submit"
             >
-                {titleSubmitBtn}
+                {requestStatus === 'loading' 
+                    ? <Loader />
+                    : titleSubmitBtn
+                }
             </Button>
         </form>
     );

@@ -1,6 +1,6 @@
 import React from "react";
 
-const Control = ({ type, children, id, onChange, placeholder, selectOptions, error }) => {
+const Control = ({ type, children, value, id, onChange, placeholder, selectOptions, error }) => {
     const invalid = error ? "invalid" : "";
 
     if (type === "text") {
@@ -8,6 +8,7 @@ const Control = ({ type, children, id, onChange, placeholder, selectOptions, err
             <div className="form-control">
                 <label htmlFor={id} className="form__label">{children}</label>
                 <input
+                    value={value}
                     className={`form__input ${invalid}`}
                     id={id}
                     placeholder={placeholder}
@@ -21,6 +22,7 @@ const Control = ({ type, children, id, onChange, placeholder, selectOptions, err
             <div className="form-control">
                 <label htmlFor={id} className="form__label">{children}</label>
                 <textarea
+                    value={value}
                     className={`form__textarea ${invalid}`}
                     id={id}
                     placeholder={placeholder}

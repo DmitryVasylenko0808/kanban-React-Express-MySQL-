@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, Route, Routes } from "react-router-dom";
+import { Link, Navigate, Route, Routes } from "react-router-dom";
 import MainLayout from "./Layouts/MainLayout.jsx";
 import BoardSinglePage from "../pages/BoardSinglePage.jsx";
 import AuthLayout from "./Layouts/AuthLayout.jsx";
@@ -14,6 +14,7 @@ const App = () => {
             <Route path="/" element={<BoardsPage />}>
                 <Route index element={<BoardIndexPage />} />
                 <Route path=":id" element={<BoardSinglePage />} />
+                <Route path="*" element={<Navigate to="/" />} />
             </Route>
             <Route path="auth" element={<AuthLayout />}>
                 <Route path="login" element={<LoginPage />} />

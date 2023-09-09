@@ -18,6 +18,7 @@ const BoardsPage = () => {
     const boardId = useSelector(selectBoardId);
     const taskId = useSelector(selectTaskId);
     const boards = useSelector(state => state.boards.items);
+    const [sideBarHidden, setSideBarHidden] = useState(false); 
 
     console.log(boards);
 
@@ -28,18 +29,26 @@ const BoardsPage = () => {
         }
     }, []);
 
+    const toggleSideBar = () => {
+        setSideBarHidden(!sideBarHidden);
+    }
+
     const classNameApp = `app ${theme}`;
 
     return (
         <>
             <div className={classNameApp}>
-                <Sidebar boardsLinks={boards} />
+                <Sidebar 
+                    boardsLinks={boards} 
+                    onToggle={toggleSideBar} 
+                    isHidden={sideBarHidden} 
+                />
                 <div className="main">
                     <Outlet />
                 </div>
             </div>
             {formsShowed.taskForm && <TaskForm boardId={boardId} taskId={taskId} />}
-            {formsShowed.boardForm && <BoardForm />}
+            {formsShowed.boardForm && <BoardForm boardId={boardId} />}
             {formsShowed.taskView && <TaskView boardId={boardId} taskId={taskId} />}
         </>
     );

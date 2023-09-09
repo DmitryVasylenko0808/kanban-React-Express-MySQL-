@@ -18,8 +18,8 @@ const formsSlice = createSlice({
             for (let key of Object.keys(state.forms)) {
                 if (key === form) {
                     state.forms[key] = true;
-                    state.boardId = boardId;
-                    state.taskId = taskId;
+                    state.boardId = variant === 'add' ? boardId : null;
+                    state.taskId = variant === 'add' ? taskId : null;
                 } else {
                     state.forms[key] = false;
                 }

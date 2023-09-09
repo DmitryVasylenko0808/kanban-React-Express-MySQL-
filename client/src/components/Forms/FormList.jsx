@@ -2,7 +2,7 @@ import React from "react";
 import FormListItem from "./FormListItem.jsx";
 import Button from "../Button.jsx";
 
-const FormList = ({ type, items, onAdd, onDelete }) => {
+const FormList = ({ type, items, onAdd, onDeleteItem, onChangeItem }) => {
     let title;
     let className;
     let typeItem;
@@ -19,21 +19,22 @@ const FormList = ({ type, items, onAdd, onDelete }) => {
         titleAddBtn = "+ Add New Category";
     }
 
+
+
     return (
         <div className={className}>
             <label className="form__label">{title}</label>
-            <FormListItem
-                type={typeItem}
-                id="item1"
-                placeholder="e.g. Take coffee break"
-                onDelete={onDelete}
-            />
-            <FormListItem
-                type={typeItem}
-                id="item1"
-                placeholder="e.g. Take coffee break"
-                onDelete={onDelete}
-            />
+            {items.map((item, index) => (
+                <FormListItem
+                    type={typeItem}
+                    id={index}
+                    value={item.value}
+                    placeholder="e.g. Take coffee break"
+                    onChange={onChangeItem}
+                    onDelete={() => onDeleteItem(index)}
+                    key={index}
+                />
+            ))}
             <Button
                 className="form__btn"
                 clickHandler={onAdd}

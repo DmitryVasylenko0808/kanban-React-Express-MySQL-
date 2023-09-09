@@ -29,6 +29,32 @@ export const fetchColumns = createAsyncThunk(
     }
 );
 
+export const createBoard = createAsyncThunk(
+    "boards/createBoard",
+    async boardData => {
+        try {
+            const res = await axios.post('/boards/create', boardData);
+            const { data } = res.data;
+            return data;
+        } catch (err) {
+            return null;
+        }
+    }
+);
+
+export const deleteBoard = createAsyncThunk(
+    "boards/deleteBoard",
+    async boardId => {
+        try {
+            await axios.delete(`/boards/${boardId}`);
+            return boardId;
+        } catch (err) {
+            const { message } = err.response.data;
+            return rejectWithValue(message);
+        }
+    }
+)
+
 const boardsSlice = createSlice({
     name: "boards",
     initialState: {
@@ -65,6 +91,20 @@ const boardsSlice = createSlice({
                 state.statusColumns = 'failed';
                 state.errorColumns = action.payload;
                 state.columns = [];
+            })
+
+            .addCase(createBoard.fulfilled, (state, action) => {
+                state.items.push(action.payload);
+            })
+            .addCase(createBoard.rejected, (state, action) => {
+                null
+            })
+
+            .addCase(deleteBoard.fulfilled, (state, action) => {
+                state.items = state.items.filter(item => item.id !== action.payload);
+            })
+            .addCase(deleteBoard.rejected, (state, action) => {
+                null;
             })
     }
 });

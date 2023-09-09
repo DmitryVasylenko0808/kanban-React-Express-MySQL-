@@ -3,14 +3,24 @@ import Button from "../Button.jsx";
 import ContextMenu from "../ContextMenu.jsx";
 import { openForm } from "../../redux/slices/formsSlice.js";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchUser, logoutUser } from "../../redux/slices/userSlice.js";
+import { logoutUser } from "../../redux/slices/userSlice.js";
+import { deleteBoard } from "../../redux/slices/boardsSlice.js";
+import { useNavigate } from "react-router";
 
-const Header = ({ boardTitle = "" }) => {
+const Header = ({ board }) => {
     const dispatch = useDispatch();
     const user = useSelector(state => state.user.user);
+    const navigate = useNavigate();
 
     const openTaskForm = () => {
         dispatch(openForm({form: "taskForm", variant: "add"}));
+    }
+
+    const onDeleteBoard = () => {
+        if (window.confirm(`Do you really want to delete board '${board.title}'?`)) {
+            dispatch(deleteBoard(board.id));
+            navigate('/');
+        }
     }
 
     const openEditBoardForm = () => {
@@ -23,19 +33,10 @@ const Header = ({ boardTitle = "" }) => {
 
     return (
         <div className="header">
-            <h2 className="header__todo">{boardTitle}</h2>
+            <h2 className="header__todo">{board ? board.title : ''}</h2>
             <div className="header-box">
                 <Button className="addtask-btn" clickHandler={openTaskForm}>+ Add New Task</Button>
                 <ContextMenu variant="header">
-                    <Button
-                        className="context-menu_btn"
-                        classNameImg="context-menu__delete"
-                        imgSrc="./assets/dark/trash-solid.svg"
-                        altSrc="Delete"
-                        clickHandler={null}
-                    >
-                        Delete
-                    </Button>
                     <Button
                         className="context-menu_btn"
                         classNameImg="context-menu__edit"
@@ -44,6 +45,15 @@ const Header = ({ boardTitle = "" }) => {
                         clickHandler={openEditBoardForm}
                     >
                         Edit
+                    </Button>
+                    <Button
+                        className="context-menu_btn"
+                        classNameImg="context-menu__delete"
+                        imgSrc="./assets/dark/trash-solid.svg"
+                        altSrc="Delete"
+                        clickHandler={onDeleteBoard}
+                    >
+                        Delete
                     </Button>
                 </ContextMenu>
 
