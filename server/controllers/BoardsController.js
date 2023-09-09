@@ -68,18 +68,18 @@ class BoardsController {
 
             let sql = "INSERT INTO `boards` (`title`, `user_id`) VALUES (?, ?)";
             const results = await DataBase.query(sql, [title, req.userId]);
-            console.log(results);
 
             const boardId = results.insertId;
             columns = columns.map(col => {
                 return [col, boardId];
             });
-            console.log(columns);
             sql = 'INSERT INTO `columns` (`title`, `board_id`) VALUES ?';
             const test = await DataBase.query(sql, [columns]);
-            console.log(test);
 
-            res.json({ success: true });
+            sql = "SELECT `id`, `title` FROM `boards` WHERE `id` = ?";
+            const data = await DataBase.query(sql, [boardId]);
+
+            res.json({ success: true, data: data[0] });
         } catch (e) {
             InternalError.error(res, e);
         }
