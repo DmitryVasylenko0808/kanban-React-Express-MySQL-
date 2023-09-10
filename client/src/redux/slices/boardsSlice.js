@@ -20,7 +20,8 @@ export const fetchColumns = createAsyncThunk(
     async (id, { rejectWithValue }) => {
         try {
             const res = await axios.get(`/boards/${id}`);
-            const { data } = res.data;
+            let { data } = res.data;
+            data = data.map(item => ({ boardId: id, ...item }));
             return data;
         } catch (err) {
             const { message } = err.response.data;
@@ -53,7 +54,53 @@ export const deleteBoard = createAsyncThunk(
             return rejectWithValue(message);
         }
     }
-)
+);
+
+export const createTask = createAsyncThunk(
+    "boards/createTask",
+    async taskData => {
+        try {
+            const res = await axios.post('/tasks/create', taskData);
+            const { taskId } = res.data;
+            console.log({...taskData, taskId});
+            return {...taskData, taskId};
+        } catch (err) {
+            return null;
+        }
+    }
+);
+
+export const toggleSubtask = createAsyncThunk(
+    "boards/toggleSubtask",
+    async data => {
+        try {
+            const res = await axios.patch(`/tasks/toggle_subtask/${data.subtaskId}`, data);
+            const { subtask } = res.data;
+            return { 
+                id: subtask.id,
+                status: subtask.status, 
+                columnId: data.columnId, 
+                task_id: subtask.task_id 
+            };
+        } catch (err) {
+            return null;
+        }
+    }
+);
+
+export const changeColumn = createAsyncThunk(
+    "boards/changeColumn",
+    async data => {
+        try {
+            const res = await axios.patch(`/tasks/change_column/${data.id}`, data);
+            console.log(res.data);
+            const { task } = res.data;
+            return {...task, prevColumnId: data.prevColumnId};
+        } catch (err) {
+            return null;
+        }
+    }
+);
 
 const boardsSlice = createSlice({
     name: "boards",
@@ -106,7 +153,50 @@ const boardsSlice = createSlice({
             .addCase(deleteBoard.rejected, (state, action) => {
                 null;
             })
+
+            .addCase(createTask.fulfilled, (state, action) => {
+                const column = state.columns.find(col => col.column_id === action.payload.columnId);
+                console.log(action.payload);
+                console.log(column);
+                const task = {
+                    id: action.payload.taskId,
+                    column_id: column.column_id,
+                    column_title: column.column_title,
+                    task_title: action.payload.title,
+                    subtasks: action.payload.subtasks.length,
+                    subtasks_completed: 0
+                };
+                column.tasks.push(task);
+            })
+            .addCase(createTask.rejected, (state, action) => {
+                null
+            })
+
+            .addCase(toggleSubtask.fulfilled, (state, action) => {
+                const column = state.columns.find(col => col.column_id === action.payload.columnId);
+                const task = column.tasks.find(t => t.id === action.payload.task_id);
+                if (action.payload.status) {
+                    task.subtasks_completed = parseFloat(task.subtasks_completed) + 1;
+                } else {
+                    task.subtasks_completed = parseFloat(task.subtasks_completed) - 1;
+                }
+                
+            })
+            .addCase(toggleSubtask.rejected, (state, action) => {
+                null;
+            })
+
+            .addCase(changeColumn.fulfilled, (state, action) => {
+                let column = state.columns.find(col => col.column_id === action.payload.prevColumnId);
+                let task = column.tasks.find(t => t.id === action.payload.id);
+
+                column.tasks = column.tasks.filter(t => t.id !== task.id);
+                let newColumn = state.columns.find(col => col.column_id === action.payload.column_id);
+                console.log(newColumn.column_id);
+            })
     }
 });
+
+export const selectColumns = state => state.boards.columns;
 
 export default boardsSlice.reducer;

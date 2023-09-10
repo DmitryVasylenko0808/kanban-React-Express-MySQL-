@@ -9,6 +9,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { selectTheme } from "../redux/slices/themeSlice.js";
 import { closeForm, openForm } from "../redux/slices/formsSlice.js";
 import Loader from "./Loader.jsx";
+import { toggleSubtask } from "../redux/slices/boardsSlice";
+import { changeColumn } from "../redux/slices/boardsSlice";
 
 const TaskView = ({ boardId, taskId }) => {
     const dispatch = useDispatch();
@@ -37,6 +39,34 @@ const TaskView = ({ boardId, taskId }) => {
             alert(message);
             dispatch(closeForm('taskView'));
         }
+    }
+
+    const onToggleSubtask = (id, value) => {
+        const newSubtasks = task.subtasks.map(s => {
+            if (s.id === id) {
+                return { ...s, status: value ? 1 : 0 };
+            } else {
+                return s;
+            }
+        });
+
+        const data = {
+            subtaskId: id,
+            status: value ? 1 : 0,
+            columnId: task.columnId
+        }
+        dispatch(toggleSubtask(data));
+        setTask({ ...task, subtasks: newSubtasks });
+    }
+
+    const onChangeColumn = value => {
+        const data = { 
+            id: task.id, 
+            columnId: value, 
+            prevColumnId: task.columnId 
+        };
+        dispatch(changeColumn(data));
+        setTask({ ...task, columnId: parseFloat(value) });
     }
 
     const openEditTaskForm = () => {
@@ -77,21 +107,21 @@ const TaskView = ({ boardId, taskId }) => {
                 <ContextMenu variant="form">
                     <Button
                         className="context-menu_btn"
-                        classNameImg="context-menu__delete"
-                        imgSrc="./assets/dark/trash-solid.svg"
-                        altSrc="Delete"
-                        clickHandler={null}
-                    >
-                        Delete
-                    </Button>
-                    <Button
-                        className="context-menu_btn"
                         classNameImg="context-menu__edit"
                         imgSrc="./assets/dark/pen-solid.svg"
                         altSrc="Edit"
                         clickHandler={openEditTaskForm}
                     >
                         Edit
+                    </Button>
+                    <Button
+                        className="context-menu_btn"
+                        classNameImg="context-menu__delete"
+                        imgSrc="./assets/dark/trash-solid.svg"
+                        altSrc="Delete"
+                        clickHandler={null}
+                    >
+                        Delete
                     </Button>
                 </ContextMenu>
             </div>
@@ -109,7 +139,7 @@ const TaskView = ({ boardId, taskId }) => {
                         title={s.title}
                         isChecked={!!s.status}
                         id={s.id}
-                        onToggle={null}
+                        onToggle={onToggleSubtask}
                     />
                 )}
             </div>
@@ -117,9 +147,10 @@ const TaskView = ({ boardId, taskId }) => {
             <Control
                 type="select"
                 id="status"
-                onChange={null}
+                onChange={onChangeColumn}
                 placeholder="e.g. Take coffee break"
                 selectOptions={columns}
+                defaultValue={task.columnId}
             >
                 Current Status
             </Control>

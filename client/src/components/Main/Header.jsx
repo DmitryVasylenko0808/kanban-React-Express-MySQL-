@@ -13,7 +13,11 @@ const Header = ({ board }) => {
     const navigate = useNavigate();
 
     const openTaskForm = () => {
-        dispatch(openForm({form: "taskForm", variant: "add"}));
+        dispatch(openForm({
+            form: "taskForm", 
+            variant: "add",
+            boardId: board.id
+        }));
     }
 
     const onDeleteBoard = () => {

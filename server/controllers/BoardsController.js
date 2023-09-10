@@ -19,21 +19,40 @@ class BoardsController {
 
     static async getOne(req, res) {
         try {
-            let sql = "SELECT `tasks`.`id`, `columns`.title AS column_title, `tasks`.`title` AS task_title, COUNT(`subtasks`.`id`) AS subtasks, SUM(CASE WHEN `subtasks`.`status` = 1 THEN 1 ELSE 0 END) AS subtasks_completed FROM `tasks` INNER JOIN `subtasks` ON (`tasks`.`id` = `subtasks`.`task_id`) INNER JOIN `columns` ON (`tasks`.`column_id` = `columns`.`id`) WHERE `columns`.`board_id` = ? GROUP BY `tasks`.`id`, `columns`.`title`, `tasks`.`title`";
+            let sql = "SELECT `tasks`.`id`, `columns`.id AS column_id, `columns`.title AS column_title, `tasks`.`title` AS task_title, COUNT(`subtasks`.`id`) AS subtasks, SUM(CASE WHEN `subtasks`.`status` = 1 THEN 1 ELSE 0 END) AS subtasks_completed FROM `tasks` INNER JOIN `subtasks` ON (`tasks`.`id` = `subtasks`.`task_id`) INNER JOIN `columns` ON (`tasks`.`column_id` = `columns`.`id`) WHERE `columns`.`board_id` = ? GROUP BY `tasks`.`id`, `columns`.`title`, `tasks`.`title`";
             const results = await DataBase.query(sql, [req.params.boardId]);
             if (results.length === 0) {
                 return res.status(404).json({ success: false, message: "Tasks are not found" });
             } 
-
-            const columns = [...new Set(results.map(task => task.column_title))];
+            
+            let columns = [...new Set(results.map(task => task.column_id))];
+            columns = columns.map(col => {
+                const { column_title } = results.find(task => task.column_id === col);
+                return { id: col, title: column_title };
+            });
             const data = [];
             for (let col of columns) {
                 let item = {
-                    column_title: col,
-                    tasks: results.filter(task => task.column_title === col)
+                    column_id: col.id,
+                    column_title: col.title,
+                    tasks: results.filter(task => task.column_id === col.id)
                 };
                 data.push(item);
             }
+            
+            // const columns = [...new Set(results.map(task => (
+            //     { id: task.column_id, title: task.column_title }
+            // )))];
+            // const data = [];
+            // console.log(columns);
+            // for (let col of columns) {
+            //     let item = {
+            //         column_id: col.id,
+            //         column_title: col.title,
+            //         tasks: results.filter(task => task.column_id === col.id)
+            //     };
+            //     data.push(item);
+            // }
 
             res.status(200).json({ success: true, data });
         } catch (e) {

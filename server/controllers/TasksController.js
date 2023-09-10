@@ -54,7 +54,7 @@ class TasksController {
             sql = "INSERT INTO `subtasks` (`title`, `status`, `task_id`) VALUES ?"
             await DataBase.query(sql, [subtasks]);
 
-            res.status(200).json({ success: true });
+            res.status(200).json({ success: true, taskId });
         } catch (e) {
             InternalError.error(res, e);
         }

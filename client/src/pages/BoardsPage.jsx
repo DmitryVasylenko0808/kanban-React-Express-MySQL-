@@ -47,7 +47,7 @@ const BoardsPage = () => {
                     <Outlet />
                 </div>
             </div>
-            {formsShowed.taskForm && <TaskForm boardId={boardId} taskId={taskId} />}
+            {formsShowed.taskForm && <TaskForm taskId={taskId} />}
             {formsShowed.boardForm && <BoardForm boardId={boardId} />}
             {formsShowed.taskView && <TaskView boardId={boardId} taskId={taskId} />}
         </>

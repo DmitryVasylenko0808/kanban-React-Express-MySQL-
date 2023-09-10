@@ -1,6 +1,6 @@
 import React from "react";
 
-const Control = ({ type, children, value, id, onChange, placeholder, selectOptions, error }) => {
+const Control = ({ type, children, value, id, onChange, placeholder, selectOptions, defaultValue, error }) => {
     const invalid = error ? "invalid" : "";
 
     if (type === "text") {
@@ -39,9 +39,9 @@ const Control = ({ type, children, value, id, onChange, placeholder, selectOptio
                     className={`form__select ${invalid}`}
                     id={id}
                     placeholder={placeholder}
-                    onChange={onChange}
+                    onChange={(e) => onChange(e.target.value)}
                 >
-                    {selectOptions.map(item => <option value={item.id}>{item.title}</option>)}
+                    {selectOptions.map(item => <option value={item.id} selected={defaultValue === item.id}>{item.title}</option>)}
                 </select>
                 {error && <span className="form__helper">{error}</span>}
             </div>

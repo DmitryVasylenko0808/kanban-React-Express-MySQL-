@@ -1,19 +1,35 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Button from "../Button.jsx";
 import Control from "../Control.jsx";
 import FormList from "./FormList.jsx";
 
 import { useDispatch, useSelector } from "react-redux";
 import { selectTheme } from "../../redux/slices/themeSlice.js";
-import { closeForm, selectVariant } from "../../redux/slices/formsSlice.js";
+import { closeForm, selectBoardId, selectVariant } from "../../redux/slices/formsSlice.js";
+import { createTask, selectColumns } from "../../redux/slices/boardsSlice.js";
+import Loader from "../Loader.jsx";
 
-const TaskForm = ({ onSubmit }) => {
+const TaskForm = ({ taskId = null }) => {
+    const dispatch = useDispatch();
     const theme = useSelector(selectTheme);
     const variant = useSelector(selectVariant);
-    const dispatch = useDispatch();
+    const columns = useSelector(selectColumns);
+    const [taskTitle, setTaskTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [subtasks, setSubtasks] = useState([]);
+    const [status, setStatus] = useState('');
+    const [requestStatus, setRequestStatus] = useState('idle');
+
+    useEffect(() => {
+        const subtasks = [
+            { value: '', status: false },
+            { value: '', status: false }
+        ];
+        setSubtasks(subtasks);
+        setStatus(columns[0].column_title);
+    }, []);
 
     const classNameForm = `form absolute ${theme}`;
-
     let title, titleSubmitBtn;
     if (variant === "add") {
         title = "Add New Task";
@@ -23,13 +39,63 @@ const TaskForm = ({ onSubmit }) => {
         titleSubmitBtn = "Edit Task";
     }
 
+    const addTask = async (e) => {
+        e.preventDefault();
+        setRequestStatus('loading');
+        try {
+            const { column_id } = columns.find(col => col.column_title === status);
+            const data = {
+                title: taskTitle,
+                desc: description,
+                subtasks: subtasks.map(s => ({ ...s, title: s.value })),
+                columnId: column_id
+            };
+            await dispatch(createTask(data));
+        } catch(err) {
+            alert('Error');
+        } finally {
+            setRequestStatus('idle');
+        }
+    }
+
+    const onChangeTaskTitle = e => {
+        setTaskTitle(e.target.value);
+    };
+
+    const onChangeDescription = e => {
+        setDescription(e.target.value);
+    };
+
+    const onChangeStatus = e => {
+        setStatus(e.target.value);
+    };
+
+    const addSubtask = () => {
+        const newSubtasks = [...subtasks, { value: '', status: false }];
+        setSubtasks(newSubtasks);
+    };
+    const deleteSubtask = id => {
+        const newSubtasks = subtasks.filter((c, index) => index !== id);
+        setSubtasks(newSubtasks);
+    };
+    const onChangeSubtask = (id, value) => {
+        const newCategories = subtasks.map((c, index) => {
+            if (index === id) {
+                return { ...c, value }
+            } else {
+                return c;
+            }
+        });
+        setSubtasks(newCategories);
+    };
+
     const onCloseHandler = e => {
         e.preventDefault();
         dispatch(closeForm('taskForm'));
     }
 
     return (
-        <form className={classNameForm} onSubmit={onSubmit}>
+        <form className={classNameForm} onSubmit={addTask}>
             <div className="form-box">
                 <Button
                     className="form__close"
@@ -46,7 +112,8 @@ const TaskForm = ({ onSubmit }) => {
             <Control
                 type="text"
                 id="title"
-                onChange={null}
+                value={taskTitle}
+                onChange={onChangeTaskTitle}
                 placeholder="e.g. Take coffee break"
             >
                 Title
@@ -55,7 +122,8 @@ const TaskForm = ({ onSubmit }) => {
             <Control
                 type="textarea"
                 id="desc"
-                onChange={null}
+                value={description}
+                onChange={onChangeDescription}
                 placeholder="e.g. It's always good to take a break. This 15 minute break will recharge the batteries a little."
             >
                 Description
@@ -63,17 +131,19 @@ const TaskForm = ({ onSubmit }) => {
 
             <FormList 
                 type="subtasks"
-                items={[]}
-                onAdd={null}
-                OnDelete={null} 
+                items={subtasks}
+                onAdd={addSubtask}
+                onDeleteItem={deleteSubtask}
+                onChangeItem={onChangeSubtask} 
             />
 
             <Control
                 type="select"
                 id="status"
-                onChange={null}
+                value={status}
+                onChange={onChangeStatus}
                 placeholder="e.g. Take coffee break"
-                selectOptions={[{ value: "value", title: "Status value" }]}
+                selectOptions={columns.map(col => ({ value: col.column_id, title: col.column_title }))}
             >
                 Status
             </Control>
@@ -82,7 +152,10 @@ const TaskForm = ({ onSubmit }) => {
                 type="submit"
                 className="form__submit"
             >
-                {titleSubmitBtn}
+                {requestStatus === 'loading' 
+                    ? <Loader /> 
+                    : titleSubmitBtn
+                }
             </Button>
         </form>
     );
