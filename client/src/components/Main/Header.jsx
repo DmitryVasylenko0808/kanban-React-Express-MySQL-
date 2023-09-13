@@ -28,7 +28,11 @@ const Header = ({ board }) => {
     }
 
     const openEditBoardForm = () => {
-        dispatch(openForm({form: "boardForm", variant: "edit"}));
+        dispatch(openForm({
+            form: "boardForm", 
+            variant: "edit",
+            boardId: board.id
+        }));
     }
 
     const logoutUserHandler = () => {

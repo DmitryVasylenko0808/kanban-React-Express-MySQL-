@@ -2,31 +2,43 @@ import React, { useEffect, useState } from "react";
 import Button from "../Button.jsx";
 import Control from "../Control.jsx";
 import FormList from "./FormList.jsx";
+import axios from "../../axios.js";
 
 import { useDispatch, useSelector } from "react-redux";
 import { selectTheme } from "../../redux/slices/themeSlice.js";
-import { closeForm, selectBoardId, selectVariant } from "../../redux/slices/formsSlice.js";
-import { createTask, selectColumns } from "../../redux/slices/boardsSlice.js";
+import { closeForm, selectBoardId, selectTaskId, selectVariant } from "../../redux/slices/formsSlice.js";
+import { createTask, editTask, selectColumns } from "../../redux/slices/boardsSlice.js";
 import Loader from "../Loader.jsx";
 
-const TaskForm = ({ taskId = null }) => {
+const TaskForm = () => {
     const dispatch = useDispatch();
+
     const theme = useSelector(selectTheme);
     const variant = useSelector(selectVariant);
     const columns = useSelector(selectColumns);
+    const boardId = useSelector(selectBoardId);
+    const taskId = useSelector(selectTaskId);
+
     const [taskTitle, setTaskTitle] = useState('');
     const [description, setDescription] = useState('');
     const [subtasks, setSubtasks] = useState([]);
     const [status, setStatus] = useState('');
+    const [prevStatus, setPrevStatus] = useState('');
     const [requestStatus, setRequestStatus] = useState('idle');
 
     useEffect(() => {
-        const subtasks = [
-            { value: '', status: false },
-            { value: '', status: false }
-        ];
-        setSubtasks(subtasks);
-        setStatus(columns[0].column_title);
+        if (variant === "add") {
+            const subtasks = [
+                { value: '', status: false },
+                { value: '', status: false }
+            ];
+            setSubtasks(subtasks);
+            setStatus(columns[0].column_title);
+            setPrevStatus(columns[0].column_title);
+        } else if (variant === "edit") {
+            console.log(boardId, taskId);
+            getTask();
+        }
     }, []);
 
     const classNameForm = `form absolute ${theme}`;
@@ -39,19 +51,44 @@ const TaskForm = ({ taskId = null }) => {
         titleSubmitBtn = "Edit Task";
     }
 
-    const addTask = async (e) => {
+    const getTask = async () => {
+        try {
+            const res = await axios.get(`/tasks/${boardId}/${taskId}`);
+            const { data } = res.data;
+
+            setTaskTitle(data.title);
+            setDescription(data.description);
+            setSubtasks(data.subtasks.map(s => ({ ...s, value: s.title })));
+            setStatus(data.columnId);
+            setPrevStatus(data.columnId);
+        } catch (err) {
+            const { message } = err.response.data;
+            alert(message);
+            dispatch(closeForm('taskForm'));
+        }
+    }
+
+    const onSubmitHandle = async (e) => {
         e.preventDefault();
         setRequestStatus('loading');
         try {
-            const { column_id } = columns.find(col => col.column_title === status);
+            const { column_id } = columns.find(col => col.column_id == status || col.column_title === status);
             const data = {
                 title: taskTitle,
                 desc: description,
                 subtasks: subtasks.map(s => ({ ...s, title: s.value })),
                 columnId: column_id
             };
-            await dispatch(createTask(data));
-        } catch(err) {
+
+            if (variant === "add") {
+                await dispatch(createTask(data));
+            } else if (variant === "edit") {
+                data.id = taskId;
+                data.prevColumnId = prevStatus;
+                await dispatch(editTask(data));
+            }
+        } catch (err) {
+            console.log(err);
             alert('Error');
         } finally {
             setRequestStatus('idle');
@@ -66,18 +103,21 @@ const TaskForm = ({ taskId = null }) => {
         setDescription(e.target.value);
     };
 
-    const onChangeStatus = e => {
-        setStatus(e.target.value);
+    const onChangeStatus = value => {
+        setPrevStatus(status);
+        setStatus(value);
     };
 
     const addSubtask = () => {
         const newSubtasks = [...subtasks, { value: '', status: false }];
         setSubtasks(newSubtasks);
     };
+
     const deleteSubtask = id => {
         const newSubtasks = subtasks.filter((c, index) => index !== id);
         setSubtasks(newSubtasks);
     };
+
     const onChangeSubtask = (id, value) => {
         const newCategories = subtasks.map((c, index) => {
             if (index === id) {
@@ -95,7 +135,7 @@ const TaskForm = ({ taskId = null }) => {
     }
 
     return (
-        <form className={classNameForm} onSubmit={addTask}>
+        <form className={classNameForm} onSubmit={onSubmitHandle}>
             <div className="form-box">
                 <Button
                     className="form__close"
@@ -143,7 +183,7 @@ const TaskForm = ({ taskId = null }) => {
                 value={status}
                 onChange={onChangeStatus}
                 placeholder="e.g. Take coffee break"
-                selectOptions={columns.map(col => ({ value: col.column_id, title: col.column_title }))}
+                selectOptions={columns.map(col => ({ id: col.column_id, title: col.column_title }))}
             >
                 Status
             </Control>

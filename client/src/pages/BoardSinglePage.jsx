@@ -21,7 +21,8 @@ const BoardSinglePage = () => {
             <Column 
                 boardId={params.id}
                 title={col.column_title} 
-                tasks={col.tasks} 
+                tasks={col.tasks}
+                key={col.column_id} 
             />)
         : <div className="main-box">
             Tasks are not found

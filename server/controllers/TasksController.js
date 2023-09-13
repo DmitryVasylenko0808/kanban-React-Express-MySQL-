@@ -108,11 +108,14 @@ class TasksController {
 
     static async edit(req, res) {
         try {
+            console.log(req.params);
+            console.log(req.body);
+
             const { id } = req.params;
-            let { title, description, columnId, subtasks } = req.body;
+            let { title, desc, columnId, subtasks } = req.body;
 
             let sql = "UPDATE `tasks` SET `title` = ?, `description` = ?, `column_id` = ? WHERE `id` = ?";
-            await DataBase.query(sql, [title, description, columnId, id]);
+            await DataBase.query(sql, [title, desc, columnId, id]);
 
             sql = "DELETE FROM `subtasks` WHERE `task_id` = ?";
             await DataBase.query(sql , [id]);

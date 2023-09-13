@@ -64,6 +64,7 @@ class BoardsController {
         try {
             let sql = "SELECT `id`, `title` FROM `boards` WHERE `id` = ?";
             const board = await DataBase.query(sql, [req.params.id]);
+            console.log(board[0]);
             const { id, title } = board[0];
 
             sql = "SELECT * FROM `columns` WHERE `board_id` = ?";
@@ -155,27 +156,32 @@ class BoardsController {
             await DataBase.query(sql, [title, id]);
 
             let columnsOld = columns.filter(col => (col.id !== undefined && col.id !== null));
-            columnsOld = columnsOld.map(col => [col.id, col.title, id]);
-            console.log(columnsOld);
             if (columnsOld.length !== 0) {
-                sql = "INSERT INTO `columns` (`id`, `title`, `board_id`) VALUES ?";
-                await DataBase.query(sql, [columnsOld]);
+                columnsOld = columnsOld.map(col => [col.id, col.title, id]);
+                console.log(columnsOld);
+                if (columnsOld.length !== 0) {
+                    sql = "INSERT INTO `columns` (`id`, `title`, `board_id`) VALUES ?";
+                    await DataBase.query(sql, [columnsOld]);
+                }
             }
-
+            
             let columnsNew = columns.filter(col => (col.id === undefined || col.id === null));
-            columnsNew = columnsNew.map(col => [col.title, id]);
-            console.log(columnsNew);
             if (columnsNew.length !== 0) {
-                sql = "INSERT INTO `columns` (`title`, `board_id`) VALUES ?";
-                await DataBase.query(sql, [columnsNew]);
+                columnsNew = columnsNew.map(col => [col.title, id]);
+                console.log(columnsNew);
+                if (columnsNew.length !== 0) {
+                    sql = "INSERT INTO `columns` (`title`, `board_id`) VALUES ?";
+                    await DataBase.query(sql, [columnsNew]);
+                }
             }
             
             sql = "INSERT INTO `tasks` (`id`, `title`, `description`, `column_id`) VALUES ?";
             tasks = tasks.map(task => [task.id, task.title, task.description, task.column_id]);
-            await DataBase.query(sql, [tasks]);
+            if (tasks.length !== 0) await DataBase.query(sql, [tasks]);
+
             sql = "INSERT INTO `subtasks` (`id`, `title`, `status`, `task_id`) VALUES ?";
             subtasks = subtasks.map(subtask => [subtask.id, subtask.title, subtask.status, subtask.task_id]);
-            await DataBase.query(sql, [subtasks]);
+            if (subtasks.length !== 0) await DataBase.query(sql, [subtasks]);
             
             res.json({ success: true });
         } catch (e) {

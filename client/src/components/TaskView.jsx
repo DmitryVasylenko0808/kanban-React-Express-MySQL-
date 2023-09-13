@@ -7,14 +7,17 @@ import Subtask from "./Subtask.jsx";
 
 import { useDispatch, useSelector } from "react-redux";
 import { selectTheme } from "../redux/slices/themeSlice.js";
-import { closeForm, openForm } from "../redux/slices/formsSlice.js";
+import { closeForm, openForm, selectBoardId, selectTaskId } from "../redux/slices/formsSlice.js";
 import Loader from "./Loader.jsx";
-import { toggleSubtask } from "../redux/slices/boardsSlice";
+import { deleteTask, toggleSubtask } from "../redux/slices/boardsSlice";
 import { changeColumn } from "../redux/slices/boardsSlice";
 
-const TaskView = ({ boardId, taskId }) => {
+const TaskView = () => {
     const dispatch = useDispatch();
     const theme = useSelector(selectTheme);
+    const boardId = useSelector(selectBoardId);
+    const taskId = useSelector(selectTaskId);
+
     const [task, setTask] = useState(null);
     const [columns, setColumns] = useState([]);
     const [requestStatus, setRequestStatus] = useState('idle');
@@ -37,6 +40,17 @@ const TaskView = ({ boardId, taskId }) => {
         } catch (err) {
             const { message } = err.response.data;
             alert(message);
+            dispatch(closeForm('taskView'));
+        }
+    }
+
+    const onDeleteTask = () => {
+        if (window.confirm(`Do you really want to delete task '${task.title}'?`)) {
+            const data = {
+                columnId: task.columnId,
+                taskId: taskId
+            };
+            dispatch(deleteTask(data));
             dispatch(closeForm('taskView'));
         }
     }
@@ -73,8 +87,8 @@ const TaskView = ({ boardId, taskId }) => {
         dispatch(openForm({ 
             form: "taskForm", 
             variant: 'edit', 
-            boardId,
-            taskId 
+            boardId: boardId,
+            taskId: task.id 
         }));
     }
 
@@ -82,6 +96,8 @@ const TaskView = ({ boardId, taskId }) => {
         e.preventDefault();
         dispatch(closeForm('taskView'));
     }
+
+    
 
     if (requestStatus === 'loading' || requestStatus === 'idle') {
         return (
@@ -119,7 +135,7 @@ const TaskView = ({ boardId, taskId }) => {
                         classNameImg="context-menu__delete"
                         imgSrc="./assets/dark/trash-solid.svg"
                         altSrc="Delete"
-                        clickHandler={null}
+                        clickHandler={onDeleteTask}
                     >
                         Delete
                     </Button>
@@ -148,9 +164,9 @@ const TaskView = ({ boardId, taskId }) => {
                 type="select"
                 id="status"
                 onChange={onChangeColumn}
+                value={task.columnId}
                 placeholder="e.g. Take coffee break"
                 selectOptions={columns}
-                defaultValue={task.columnId}
             >
                 Current Status
             </Control>

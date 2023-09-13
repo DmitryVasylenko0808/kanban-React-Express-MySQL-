@@ -63,7 +63,8 @@ module.exports = {
         ]
     },
     devServer: {
-        static: "./dist"
+        static: "./dist",
+        historyApiFallback: true
     },
     devtool: "source-map"
 }

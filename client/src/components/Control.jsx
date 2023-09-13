@@ -41,7 +41,7 @@ const Control = ({ type, children, value, id, onChange, placeholder, selectOptio
                     placeholder={placeholder}
                     onChange={(e) => onChange(e.target.value)}
                 >
-                    {selectOptions.map(item => <option value={item.id} selected={defaultValue === item.id}>{item.title}</option>)}
+                    {selectOptions.map(item => <option value={item.id} selected={value === item.id}>{item.title}</option>)}
                 </select>
                 {error && <span className="form__helper">{error}</span>}
             </div>

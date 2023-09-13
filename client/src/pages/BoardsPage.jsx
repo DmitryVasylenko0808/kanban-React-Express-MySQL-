@@ -18,9 +18,8 @@ const BoardsPage = () => {
     const boardId = useSelector(selectBoardId);
     const taskId = useSelector(selectTaskId);
     const boards = useSelector(state => state.boards.items);
-    const [sideBarHidden, setSideBarHidden] = useState(false); 
 
-    console.log(boards);
+    const [sideBarHidden, setSideBarHidden] = useState(false); 
 
     useEffect(() => {
         if (localStorage.getItem('token')) {
@@ -47,8 +46,8 @@ const BoardsPage = () => {
                     <Outlet />
                 </div>
             </div>
-            {formsShowed.taskForm && <TaskForm taskId={taskId} />}
-            {formsShowed.boardForm && <BoardForm boardId={boardId} />}
+            {formsShowed.taskForm && <TaskForm  />}
+            {formsShowed.boardForm && <BoardForm />}
             {formsShowed.taskView && <TaskView boardId={boardId} taskId={taskId} />}
         </>
     );

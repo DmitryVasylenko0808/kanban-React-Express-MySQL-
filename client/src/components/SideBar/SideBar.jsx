@@ -36,7 +36,7 @@ const Sidebar = ({ boardsLinks, onToggle, isHidden }) => {
             {!isHidden ? 
                 <div className="sidebar__box">
                     <h1 className="sidebar__logo">kanban</h1>
-                    <span className="sidebar__countboards">ALL BOARDS {boardsCount}</span>
+                    <span className="sidebar__countboards">{`ALL BOARDS (${boardsCount})`}</span>
                     <NavBar>
                         {boardsLinks.map(board => <NavItem to={board.id} title={board.title} key={board.id}/>)}
                     </NavBar>

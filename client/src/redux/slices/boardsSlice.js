@@ -102,6 +102,34 @@ export const changeColumn = createAsyncThunk(
     }
 );
 
+export const deleteTask = createAsyncThunk(
+    "boards/deleteTask",
+    async data => {
+        try {
+            await axios.delete(`/tasks/${data.taskId}`);
+            return { 
+                columnId: data.columnId, 
+                taskId: data.taskId 
+            };
+        } catch (err) {
+            return null;
+        }
+    }
+);
+
+export const editTask = createAsyncThunk(
+    "boards/editTask",
+    async taskData => {
+        try {
+            console.log(taskData);
+            const res = await axios.put(`/tasks/edit/${taskData.id}`, taskData);
+            return {...taskData, prevColumnId: taskData.prevColumnId};
+        } catch (err) {
+            console.log(err);
+        }
+    }
+)
+
 const boardsSlice = createSlice({
     name: "boards",
     initialState: {
@@ -170,6 +198,49 @@ const boardsSlice = createSlice({
             })
             .addCase(createTask.rejected, (state, action) => {
                 null
+            })
+
+            .addCase(deleteTask.fulfilled, (state, action) => {
+                const column = state.columns.find(col => col.column_id === action.payload.columnId);
+                column.tasks = column.tasks.filter(t => t.id !== action.payload.taskId);
+            })
+            .addCase(deleteTask.rejected, (state, action) => {
+                null;
+            })
+
+            .addCase(editTask.fulfilled, (state, action) => {
+                let column = state.columns.find(col => col.column_id === action.payload.prevColumnId);
+                let task = column.tasks.find(t => t.id === action.payload.id);
+
+                const subtasksCount = action.payload.subtasks.length;
+                const completedSubtasksCount = action.payload.subtasks.filter(s => s.status).length;
+                task = { 
+                    ...task,
+                    column_id: action.payload.columnId,
+                    column_title: column.column_title,
+                    task_title: action.payload.title,
+                    subtasks: subtasksCount,
+                    subtasks_completed: completedSubtasksCount
+                };
+
+                if (action.payload.prevColumnId !== task.column_id) {
+                    column.tasks = column.tasks.filter(t => t.id !== task.id);
+                    let nextColumn = state.columns.find(col => col.column_id === task.column_id);
+                    nextColumn.tasks.push(task);
+                } else {
+                    column.tasks = column.tasks.map(t => {
+                        if (t.id === task.id) {
+                            console.log({ ...t });
+                            return task;
+                        } else {
+                            console.log(t);
+                            return t;
+                        }
+                    });
+                }
+            })
+            .addCase(editTask.rejected, (state, action) => {
+                null;
             })
 
             .addCase(toggleSubtask.fulfilled, (state, action) => {

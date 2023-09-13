@@ -4,16 +4,21 @@ import Control from "../Control.jsx";
 import FormList from "./FormList.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { selectTheme } from "../../redux/slices/themeSlice.js";
-import { closeForm, selectVariant } from "../../redux/slices/formsSlice.js";
-import { createBoard } from "../../redux/slices/boardsSlice.js";
+import { closeForm, selectBoardId, selectVariant } from "../../redux/slices/formsSlice.js";
+import { createBoard, fetchBoards, fetchColumns } from "../../redux/slices/boardsSlice.js";
+import axios from "../../axios.js";
 import Loader from "../Loader.jsx";
 
-const BoardForm = ({ boardId = null }) => {
+const BoardForm = () => {
     const dispatch = useDispatch();
     const theme = useSelector(selectTheme);
     const variant = useSelector(selectVariant);
+    const boardId = useSelector(selectBoardId);
+
     const [boardName, setBoardName] = useState('');
     const [categories, setCategories] = useState([]);
+    const [tasks, setTasks] = useState([]);
+    const [subtasks, setSubtasks] = useState([]);
     const [requestStatus, setRequestStatus] = useState('idle');
 
     const classNameForm = `form absolute ${theme}`;
@@ -28,12 +33,31 @@ const BoardForm = ({ boardId = null }) => {
     }
 
     useEffect(() => {
-        const categories = [
-            { value: '' },
-            { value: '' }
-        ];
-        setCategories(categories);
+        if (variant === "add") {
+            const categories = [
+                { value: '' },
+                { value: '' }
+            ];
+            setCategories(categories);
+        } else if (variant === "edit") {
+            getBoard();
+        }
     }, []);
+
+    const getBoard = async () => {
+        try {
+            console.log(boardId);
+            const res = await axios.get(`/boards/for_editing/${boardId}`);
+            const { title, columns, tasks, subtasks } = res.data;
+
+            setBoardName(title);
+            setCategories(columns.map(col => ({ ...col, value: col.title })));
+            setTasks(tasks);
+            setSubtasks(subtasks);
+        } catch (err) {
+            console.log(err);
+        }
+    }
 
     const addBoard = async (e) => {
         e.preventDefault();
@@ -46,6 +70,27 @@ const BoardForm = ({ boardId = null }) => {
             await dispatch(createBoard(data));
         } catch (err) {
             alert('Error');
+        } finally {
+            setRequestStatus('idle');
+        }
+    }
+
+    const editBoard = async (e) => {
+        e.preventDefault();
+        setRequestStatus('loading');
+        try {
+            const data = {
+                title: boardName,
+                columns: categories.map(c => ({ ...c, title: c.value })),
+                tasks: tasks,
+                subtasks: subtasks
+            };
+            console.log(data);
+            await axios.put(`/boards/edit/${boardId}`, data);
+            dispatch(fetchBoards());
+            dispatch(fetchColumns(boardId));
+        } catch (err) {
+            console.log(err);
         } finally {
             setRequestStatus('idle');
         }
@@ -82,7 +127,7 @@ const BoardForm = ({ boardId = null }) => {
     }
 
     return (
-        <form className={classNameForm} onSubmit={addBoard}>
+        <form className={classNameForm} onSubmit={editBoard}>
             <div className="form-box">
                 <Button
                     className="form__close"
