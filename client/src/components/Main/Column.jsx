@@ -1,19 +1,26 @@
 import React from "react";
 import Task from "./Task.jsx";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { openForm } from "../../redux/slices/formsSlice.js";
+import { useNavigate } from "react-router";
 
 const Column = ({ boardId, title, tasks }) => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const user = useSelector(state => state.user.user);
 
     const openTaskView = (id) => {
-        console.log(id);
-        dispatch(openForm({ 
-            form: "taskView", 
-            variant: "add",
-            boardId, 
-            taskId: id 
-        }));
+        if (!user) {
+            alert('You are not authorized. Log in to add/edit board');
+            navigate('/auth/login');
+        } else {
+            dispatch(openForm({ 
+                form: "taskView", 
+                variant: "add",
+                boardId, 
+                taskId: id 
+            }));
+        }
     }
 
     return (

@@ -31,9 +31,11 @@ const TaskView = () => {
 
     const getTask = async () => {
         try {
-            setRequestStatus('loading')
+            setRequestStatus('loading');
+            
             const res = await axios.get(`/tasks/${boardId}/${taskId}`);
             const { data, columns } = res.data;
+
             setTask(data);
             setColumns(columns);
             setRequestStatus('succeeded');
@@ -143,7 +145,7 @@ const TaskView = () => {
             </div>
 
             <p className="form__text">
-                {task.desciption}
+                {task.description}
             </p>
 
             <div className="form-subtasks-checks">

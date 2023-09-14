@@ -3,11 +3,14 @@ import NavBar from "./NavBar.jsx";
 import Button from "../Button.jsx";
 import SwitchThemeBox from "../SwitchThemeBox.jsx";
 import NavItem from "./NavItem.jsx";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { openForm } from "../../redux/slices/formsSlice.js";
+import { useNavigate } from "react-router";
 
 const Sidebar = ({ boardsLinks, onToggle, isHidden }) => {
     const dispatch = useDispatch();
+    const user = useSelector(state => state.user.user);
+    const navigate = useNavigate();
 
     let boardsCount = 0;
     if (boardsLinks.length) {
@@ -24,11 +27,15 @@ const Sidebar = ({ boardsLinks, onToggle, isHidden }) => {
     }
 
     const openBoardForm = () => {
-        dispatch(openForm({
-            form: "boardForm", 
-            variant: 'add'
-        }));
-        //
+        if (!user) {
+            alert('You are not authorized. Log in to add/edit board');
+            navigate('/auth/login');
+        } else {
+            dispatch(openForm({
+                form: "boardForm", 
+                variant: 'add'
+            }));
+        }
     }
 
     return (

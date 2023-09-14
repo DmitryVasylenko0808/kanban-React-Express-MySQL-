@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import Button from "../Button.jsx";
 import ContextMenu from "../ContextMenu.jsx";
-import { openForm } from "../../redux/slices/formsSlice.js";
+import { clearForms, openForm } from "../../redux/slices/formsSlice.js";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../redux/slices/userSlice.js";
-import { deleteBoard } from "../../redux/slices/boardsSlice.js";
+import { clearAll, deleteBoard } from "../../redux/slices/boardsSlice.js";
 import { useNavigate } from "react-router";
 
 const Header = ({ board }) => {
@@ -13,29 +13,46 @@ const Header = ({ board }) => {
     const navigate = useNavigate();
 
     const openTaskForm = () => {
-        dispatch(openForm({
-            form: "taskForm", 
-            variant: "add",
-            boardId: board.id
-        }));
+        if (!user) {
+            alert('You are not authorized. Log in to add/edit board');
+            navigate('/auth/login');
+        } else {
+            dispatch(openForm({
+                form: "taskForm", 
+                variant: "add",
+                boardId: board.id
+            }));
+        }
     }
 
     const onDeleteBoard = () => {
-        if (window.confirm(`Do you really want to delete board '${board.title}'?`)) {
-            dispatch(deleteBoard(board.id));
-            navigate('/');
+        if (!user) {
+            alert('You are not authorized. Log in to add/edit board');
+            navigate('/auth/login');
+        } else {
+            if (window.confirm(`Do you really want to delete board '${board.title}'?`)) {
+                dispatch(deleteBoard(board.id));
+                navigate('/');
+            }
         }
     }
 
     const openEditBoardForm = () => {
-        dispatch(openForm({
-            form: "boardForm", 
-            variant: "edit",
-            boardId: board.id
-        }));
+        if (!user) {
+            alert('You are not authorized. Log in to add/edit board');
+            navigate('/auth/login');
+        } else {
+            dispatch(openForm({
+                form: "boardForm", 
+                variant: "edit",
+                boardId: board.id
+            }));
+        }
     }
 
     const logoutUserHandler = () => {
+        dispatch(clearAll());
+        dispatch(clearForms());
         dispatch(logoutUser());
     }
 

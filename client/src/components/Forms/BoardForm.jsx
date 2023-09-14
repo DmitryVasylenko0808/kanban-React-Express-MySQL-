@@ -11,6 +11,7 @@ import Loader from "../Loader.jsx";
 
 const BoardForm = () => {
     const dispatch = useDispatch();
+    
     const theme = useSelector(selectTheme);
     const variant = useSelector(selectVariant);
     const boardId = useSelector(selectBoardId);
@@ -22,7 +23,6 @@ const BoardForm = () => {
     const [requestStatus, setRequestStatus] = useState('idle');
 
     const classNameForm = `form absolute ${theme}`;
-
     let title, titleSubmitBtn;
     if (variant === "add") {
         title = "Add New Board";
@@ -59,8 +59,16 @@ const BoardForm = () => {
         }
     }
 
-    const addBoard = async (e) => {
+    const onSubmitHandle = (e) => {
         e.preventDefault();
+        if (variant === "add") {
+            addBoard();
+        } else if (variant === "edit") {
+            editBoard();
+        }
+    }
+
+    const addBoard = async () => {
         setRequestStatus('loading');
         try {
             const data = {
@@ -75,8 +83,7 @@ const BoardForm = () => {
         }
     }
 
-    const editBoard = async (e) => {
-        e.preventDefault();
+    const editBoard = async () => {
         setRequestStatus('loading');
         try {
             const data = {
@@ -127,7 +134,7 @@ const BoardForm = () => {
     }
 
     return (
-        <form className={classNameForm} onSubmit={editBoard}>
+        <form className={classNameForm} onSubmit={onSubmitHandle}>
             <div className="form-box">
                 <Button
                     className="form__close"

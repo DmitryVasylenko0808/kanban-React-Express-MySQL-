@@ -35,11 +35,21 @@ const formsSlice = createSlice({
             state.variant = '';
             state.boardId = null;
             state.taskId = null;
+        },
+        clearForms: state => {
+            state.forms = {
+                taskForm: false,
+                boardForm: false,
+                taskView: false
+            },
+            state.variant = '',
+            state.boardId = null,
+            state.taskId = null
         }
     }
 });
 
-export const { openForm, closeForm } = formsSlice.actions;
+export const { openForm, closeForm, clearForms } = formsSlice.actions;
 
 export const selectForms = state => state.forms.forms;
 export const selectVariant = state => state.forms.variant;

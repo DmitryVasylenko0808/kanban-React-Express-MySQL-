@@ -20,39 +20,41 @@ class BoardsController {
     static async getOne(req, res) {
         try {
             let sql = "SELECT `tasks`.`id`, `columns`.id AS column_id, `columns`.title AS column_title, `tasks`.`title` AS task_title, COUNT(`subtasks`.`id`) AS subtasks, SUM(CASE WHEN `subtasks`.`status` = 1 THEN 1 ELSE 0 END) AS subtasks_completed FROM `tasks` INNER JOIN `subtasks` ON (`tasks`.`id` = `subtasks`.`task_id`) INNER JOIN `columns` ON (`tasks`.`column_id` = `columns`.`id`) WHERE `columns`.`board_id` = ? GROUP BY `tasks`.`id`, `columns`.`title`, `tasks`.`title`";
-            const results = await DataBase.query(sql, [req.params.boardId]);
-            if (results.length === 0) {
-                return res.status(404).json({ success: false, message: "Tasks are not found" });
-            } 
-            
-            let columns = [...new Set(results.map(task => task.column_id))];
-            columns = columns.map(col => {
-                const { column_title } = results.find(task => task.column_id === col);
-                return { id: col, title: column_title };
-            });
+            let results = await DataBase.query(sql, [req.params.boardId]);
             const data = [];
-            for (let col of columns) {
-                let item = {
-                    column_id: col.id,
-                    column_title: col.title,
-                    tasks: results.filter(task => task.column_id === col.id)
-                };
-                data.push(item);
+            if (results.length !== 0) {
+                let columns = [...new Set(results.map(task => task.column_id))];
+                columns = columns.map(col => {
+                    const { column_title } = results.find(task => task.column_id === col);
+                    return { id: col, title: column_title };
+                });
+
+                for (let col of columns) {
+                    let item = {
+                        column_id: col.id,
+                        column_title: col.title,
+                        tasks: results.filter(task => task.column_id === col.id)
+                    };
+                    data.push(item);
+                }
             }
-            
-            // const columns = [...new Set(results.map(task => (
-            //     { id: task.column_id, title: task.column_title }
-            // )))];
-            // const data = [];
-            // console.log(columns);
-            // for (let col of columns) {
-            //     let item = {
-            //         column_id: col.id,
-            //         column_title: col.title,
-            //         tasks: results.filter(task => task.column_id === col.id)
-            //     };
-            //     data.push(item);
-            // }
+
+            sql = "SELECT `columns`.`id`, `columns`.`title`, COUNT(`tasks`.`id`) AS tasks_count FROM `columns` LEFT JOIN `tasks` ON (`tasks`.`column_id` = `columns`.id) WHERE `columns`.`board_id` = ? GROUP BY `columns`.`id` HAVING tasks_count = 0";
+            let columnsNoTask = await DataBase.query(sql, [req.params.boardId]);
+            if (columnsNoTask.length !== 0) {
+                for (let col of columnsNoTask) {
+                    let item = {
+                        column_id: col.id,
+                        column_title: col.title,
+                        tasks: []
+                    };
+                    data.push(item);
+                }
+            }
+
+            if (results.length === 0 && columnsNoTask === 0) {
+                return res.status(404).json({ success: false, message: "Tasks are not found" });
+            }
 
             res.status(200).json({ success: true, data });
         } catch (e) {
@@ -72,7 +74,7 @@ class BoardsController {
 
             sql = "SELECT `tasks`.`id`, `tasks`.`title`, `tasks`.`description`, `tasks`.`column_id` FROM `columns` INNER JOIN `tasks` ON (`columns`.`id` = `tasks`.`column_id`) WHERE `columns`.`board_id` = ?";
             const tasks = await DataBase.query(sql, [req.params.id]);
-            
+
             sql = "SELECT `subtasks`.`id`, `subtasks`.`title`, `subtasks`.`status`, `subtasks`.`task_id`  FROM `columns` INNER JOIN `tasks` ON (`columns`.`id` = `tasks`.`column_id`) INNER JOIN `subtasks` ON (`tasks`.`id` = `subtasks`.`task_id`) WHERE `columns`.`board_id` = ?";
             const subtasks = await DataBase.query(sql, [req.params.id]);
 
@@ -158,31 +160,41 @@ class BoardsController {
             let columnsOld = columns.filter(col => (col.id !== undefined && col.id !== null));
             if (columnsOld.length !== 0) {
                 columnsOld = columnsOld.map(col => [col.id, col.title, id]);
-                console.log(columnsOld);
                 if (columnsOld.length !== 0) {
                     sql = "INSERT INTO `columns` (`id`, `title`, `board_id`) VALUES ?";
                     await DataBase.query(sql, [columnsOld]);
                 }
             }
-            
+
             let columnsNew = columns.filter(col => (col.id === undefined || col.id === null));
             if (columnsNew.length !== 0) {
                 columnsNew = columnsNew.map(col => [col.title, id]);
-                console.log(columnsNew);
                 if (columnsNew.length !== 0) {
                     sql = "INSERT INTO `columns` (`title`, `board_id`) VALUES ?";
                     await DataBase.query(sql, [columnsNew]);
                 }
             }
-            
+
+            sql = "SELECT `id` FROM `columns` WHERE `board_id` = ?";
+            let columnsIds = await DataBase.query(sql, [id]);
+            columnsIds = columnsIds.map(col => col.id);
+
             sql = "INSERT INTO `tasks` (`id`, `title`, `description`, `column_id`) VALUES ?";
-            tasks = tasks.map(task => [task.id, task.title, task.description, task.column_id]);
+            tasks = tasks
+                .filter(task => columnsIds.includes(task.column_id))
+                .map(task => [task.id, task.title, task.description, task.column_id]);
             if (tasks.length !== 0) await DataBase.query(sql, [tasks]);
 
+            sql = "SELECT `tasks`.`id` FROM `columns` INNER JOIN `tasks` ON (`tasks`.`column_id` = `columns`.`id`) WHERE `columns`.`board_id` = ?";
+            let tasksIds = await DataBase.query(sql, [id]);
+            tasksIds = tasksIds.map(col => col.id);
+
             sql = "INSERT INTO `subtasks` (`id`, `title`, `status`, `task_id`) VALUES ?";
-            subtasks = subtasks.map(subtask => [subtask.id, subtask.title, subtask.status, subtask.task_id]);
+            subtasks = subtasks
+                .filter(subtask => tasksIds.includes(subtask.task_id))
+                .map(subtask => [subtask.id, subtask.title, subtask.status, subtask.task_id]);
             if (subtasks.length !== 0) await DataBase.query(sql, [subtasks]);
-            
+
             res.json({ success: true });
         } catch (e) {
             InternalError.error(res, e);

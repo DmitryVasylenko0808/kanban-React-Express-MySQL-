@@ -22,6 +22,7 @@ export const fetchColumns = createAsyncThunk(
             const res = await axios.get(`/boards/${id}`);
             let { data } = res.data;
             data = data.map(item => ({ boardId: id, ...item }));
+            console.log(data);
             return data;
         } catch (err) {
             const { message } = err.response.data;
@@ -139,6 +140,16 @@ const boardsSlice = createSlice({
         statusColumns: 'idle',
         error: null,
         errorColumns: null
+    },
+    reducers: {
+        clearAll: state => {
+            state.items = [];
+            state.columns = [];
+            state.status = 'idle';
+            state.statusColumns = 'idle';
+            state.error = null;
+            state.errorColumns = null;
+        }
     },
     extraReducers(builder) {
         builder
@@ -263,11 +274,13 @@ const boardsSlice = createSlice({
 
                 column.tasks = column.tasks.filter(t => t.id !== task.id);
                 let newColumn = state.columns.find(col => col.column_id === action.payload.column_id);
+                newColumn.tasks.push(task);
                 console.log(newColumn.column_id);
             })
     }
 });
 
+export const { clearAll } = boardsSlice.actions;
 export const selectColumns = state => state.boards.columns;
 
 export default boardsSlice.reducer;

@@ -6,12 +6,16 @@ import Button from "../components/Button.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { openForm } from "../redux/slices/formsSlice.js";
 import Loader from "../components/Loader.jsx";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { fetchColumns } from "../redux/slices/boardsSlice.js";
 
 const BoardSinglePage = () => {
     const dispatch = useDispatch();
+
     const params = useParams();
+    const navigate = useNavigate();
+     
+    const user = useSelector(state => state.user.user);
     const board = useSelector(state => state.boards.items.find(item => item.id === parseFloat(params.id)));
     const columns = useSelector(state => state.boards.columns);
     const requestStatus = useSelector(state => state.boards.statusColumns);
@@ -33,7 +37,12 @@ const BoardSinglePage = () => {
     }, [params.id]);
 
     const openBoardForm = () => {
-        dispatch(openForm({form: "boardForm", variant: 'edit'}))
+        if (!user) {
+            alert('You are not authorized. Log in to add/edit board');
+            navigate('/auth/login');
+        } else {
+            dispatch(openForm({form: "boardForm", variant: 'edit'}));
+        }
     }
 
     return (
