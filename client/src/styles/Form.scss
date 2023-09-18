@@ -1,0 +1,125 @@
+.form {
+    width: 600px;
+    padding: 40px 35px 35px 35px;
+    background-color: #40434fb8;
+    border-radius: 12px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+
+    &.absolute {
+        padding-top: 24px;
+
+        position: absolute;
+        top: 12%;
+        left: 33%;
+
+        background-color: #40434f;
+    }
+
+    &-box {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    &__close:hover img {
+        content: url(../assets/dark/xmark-solid-hover.svg);
+    }
+
+    &-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 24px;
+
+        font-size: 18px;
+
+        &.authtype {
+            justify-content: flex-start;
+        }
+
+        &.box {
+            display: block;
+        }
+
+        &.box button {
+            float: right;
+            width: 100px;
+            margin: 0 0 26px 32px;
+        }
+    }
+
+    &__submit {
+        padding: 14px 0;
+        background-color: #7472db;
+        border: 1px solid #7472db;
+        border-radius: 30px;
+
+        display: inline-flex;
+        justify-content: center;
+
+        color: #ffffff;
+
+        transition: all 0.2s;
+
+        &:hover {
+            border: 1px solid #ffffff;
+            background-color: #ffffff;
+            color: #7472db;
+        }
+    
+        &:disabled {
+            background-color: #4c4f5e;
+            color: #ffffff;
+        }
+    }
+
+    &-question {
+        display: flex;
+        gap: 6px;
+    }
+
+    &__link {
+        color: #7472db;
+        text-decoration: underline;
+
+        cursor: pointer;
+
+        &:hover {
+            color: #ffffff;
+        }
+    }
+
+    &__btn {
+        padding: 14px 0;
+        background-color: #ffffff;
+        border: 1px solid #ffffff;
+        border-radius: 30px;
+
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+
+        color: #7472db;
+
+        transition: all 0.2s;
+
+        &:hover {
+            border: 1px solid #7472db;
+            background-color: #7472db;
+            color: #ffffff;
+        }
+    
+        &:hover img {
+            content: url(../assets/dark/pen-solid-hover.svg);
+        }
+    }
+
+    &__text {
+        color: #ffffffa3;
+        line-height: 1.75em;
+    }
+
+}

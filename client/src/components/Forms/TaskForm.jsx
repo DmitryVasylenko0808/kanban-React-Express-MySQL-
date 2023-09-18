@@ -16,6 +16,7 @@ const TaskForm = () => {
     const theme = useSelector(selectTheme);
     const variant = useSelector(selectVariant);
     const columns = useSelector(selectColumns);
+    const error = useSelector(state => state.boards.error);
     const boardId = useSelector(selectBoardId);
     const taskId = useSelector(selectTaskId);
 
@@ -71,28 +72,46 @@ const TaskForm = () => {
     const onSubmitHandle = async (e) => {
         e.preventDefault();
         setRequestStatus('loading');
-        try {
-            const { column_id } = columns.find(col => col.column_id == status || col.column_title === status);
-            const data = {
-                title: taskTitle,
-                desc: description,
-                subtasks: subtasks.map(s => ({ ...s, title: s.value })),
-                columnId: column_id
-            };
 
-            if (variant === "add") {
-                await dispatch(createTask(data));
-            } else if (variant === "edit") {
-                data.id = taskId;
-                data.prevColumnId = prevStatus;
-                await dispatch(editTask(data));
-            }
-        } catch (err) {
-            console.log(err);
-            alert('Error');
-        } finally {
-            setRequestStatus('idle');
+        const { column_id } = columns.find(col => col.column_id == status || col.column_title === status);
+        const data = {
+            title: taskTitle,
+            desc: description,
+            subtasks: subtasks.map(s => ({ ...s, title: s.value })),
+            columnId: column_id
+        };
+
+        if (variant === "add") {
+            await dispatch(createTask(data));
+        } else if (variant === "edit") {
+            data.id = taskId;
+            data.prevColumnId = prevStatus;
+            await dispatch(editTask(data));
         }
+        setRequestStatus('idle');
+
+        // try {
+        //     const { column_id } = columns.find(col => col.column_id == status || col.column_title === status);
+        //     const data = {
+        //         title: taskTitle,
+        //         desc: description,
+        //         subtasks: subtasks.map(s => ({ ...s, title: s.value })),
+        //         columnId: column_id
+        //     };
+
+        //     if (variant === "add") {
+        //         await dispatch(createTask(data));
+        //     } else if (variant === "edit") {
+        //         data.id = taskId;
+        //         data.prevColumnId = prevStatus;
+        //         await dispatch(editTask(data));
+        //     }
+        // } catch (err) {
+        //     console.log(err);
+        //     alert('Error');
+        // } finally {
+        //     setRequestStatus('idle');
+        // }
     }
 
     const onChangeTaskTitle = e => {
@@ -155,6 +174,7 @@ const TaskForm = () => {
                 value={taskTitle}
                 onChange={onChangeTaskTitle}
                 placeholder="e.g. Take coffee break"
+                error={error && error.path === "title" && error.message}
             >
                 Title
             </Control>
@@ -169,12 +189,13 @@ const TaskForm = () => {
                 Description
             </Control>
 
-            <FormList 
+            <FormList
                 type="subtasks"
                 items={subtasks}
                 onAdd={addSubtask}
                 onDeleteItem={deleteSubtask}
-                onChangeItem={onChangeSubtask} 
+                onChangeItem={onChangeSubtask}
+                error={error && error.path === "subtasks" && error.message}
             />
 
             <Control
@@ -192,8 +213,8 @@ const TaskForm = () => {
                 type="submit"
                 className="form__submit"
             >
-                {requestStatus === 'loading' 
-                    ? <Loader /> 
+                {requestStatus === 'loading'
+                    ? <Loader />
                     : titleSubmitBtn
                 }
             </Button>

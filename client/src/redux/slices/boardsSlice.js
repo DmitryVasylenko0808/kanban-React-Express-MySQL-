@@ -33,13 +33,15 @@ export const fetchColumns = createAsyncThunk(
 
 export const createBoard = createAsyncThunk(
     "boards/createBoard",
-    async boardData => {
+    async (boardData, { rejectWithValue }) => {
         try {
             const res = await axios.post('/boards/create', boardData);
             const { data } = res.data;
+            console.log(data);
             return data;
         } catch (err) {
-            return null;
+            const { error } = err.response.data;
+            return rejectWithValue(error);
         }
     }
 );
@@ -59,14 +61,15 @@ export const deleteBoard = createAsyncThunk(
 
 export const createTask = createAsyncThunk(
     "boards/createTask",
-    async taskData => {
+    async (taskData, { rejectWithValue }) => {
         try {
             const res = await axios.post('/tasks/create', taskData);
             const { taskId } = res.data;
             console.log({...taskData, taskId});
             return {...taskData, taskId};
         } catch (err) {
-            return null;
+            const { error } = err.response.data;
+            return rejectWithValue(error);
         }
     }
 );
@@ -120,13 +123,14 @@ export const deleteTask = createAsyncThunk(
 
 export const editTask = createAsyncThunk(
     "boards/editTask",
-    async taskData => {
+    async (taskData, { rejectWithValue }) => {
         try {
             console.log(taskData);
             const res = await axios.put(`/tasks/edit/${taskData.id}`, taskData);
             return {...taskData, prevColumnId: taskData.prevColumnId};
         } catch (err) {
-            console.log(err);
+            const { error } = err.response.data;
+            return rejectWithValue(error);
         }
     }
 )
@@ -181,9 +185,10 @@ const boardsSlice = createSlice({
 
             .addCase(createBoard.fulfilled, (state, action) => {
                 state.items.push(action.payload);
+                state.error = null;
             })
             .addCase(createBoard.rejected, (state, action) => {
-                null
+                state.error = action.payload;
             })
 
             .addCase(deleteBoard.fulfilled, (state, action) => {
@@ -206,9 +211,10 @@ const boardsSlice = createSlice({
                     subtasks_completed: 0
                 };
                 column.tasks.push(task);
+                state.error = null;
             })
             .addCase(createTask.rejected, (state, action) => {
-                null
+                state.error = action.payload;
             })
 
             .addCase(deleteTask.fulfilled, (state, action) => {
@@ -249,9 +255,11 @@ const boardsSlice = createSlice({
                         }
                     });
                 }
+                
+                state.error = null;
             })
             .addCase(editTask.rejected, (state, action) => {
-                null;
+                state.error = action.payload;
             })
 
             .addCase(toggleSubtask.fulfilled, (state, action) => {

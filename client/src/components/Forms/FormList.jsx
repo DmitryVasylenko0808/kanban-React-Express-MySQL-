@@ -2,7 +2,7 @@ import React from "react";
 import FormListItem from "./FormListItem.jsx";
 import Button from "../Button.jsx";
 
-const FormList = ({ type, items, onAdd, onDeleteItem, onChangeItem }) => {
+const FormList = ({ type, items, onAdd, onDeleteItem, onChangeItem, error }) => {
     let title;
     let className;
     let typeItem;
@@ -24,6 +24,7 @@ const FormList = ({ type, items, onAdd, onDeleteItem, onChangeItem }) => {
     return (
         <div className={className}>
             <label className="form__label">{title}</label>
+            {error && <span className="form__helper">{error}</span>}
             {items.map((item, index) => (
                 <FormListItem
                     type={typeItem}

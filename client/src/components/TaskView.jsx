@@ -158,6 +158,7 @@ const TaskView = () => {
                         isChecked={!!s.status}
                         id={s.id}
                         onToggle={onToggleSubtask}
+                        key={s.id}
                     />
                 )}
             </div>

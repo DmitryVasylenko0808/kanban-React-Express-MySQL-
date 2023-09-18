@@ -1,0 +1,24 @@
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+
+    flex: 0 0 345px;
+
+    &-box {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    
+        color: #ffffffa3;
+        letter-spacing: 3px;
+
+        &__circle {
+            width: 20px;
+            height: 20px;
+            background-color: #00c3ff;
+            border-radius: 50%;
+        }
+    }
+    
+}

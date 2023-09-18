@@ -9,7 +9,7 @@ import Loader from "../components/Loader.jsx";
 
 const LoginPage = () => {
     const [requestStatus, setRequestStatus] = useState("idle");
-    const [error, setError] = useState("");
+    const [error, setError] = useState(null);
 
     const onSubmitHandle = async (e) => {
         e.preventDefault();
@@ -26,8 +26,8 @@ const LoginPage = () => {
             localStorage.setItem("token", res.data.token);
             setRequestStatus("succeeded");
         } catch (err) {
-            const { message } = err.response.data;
-            setError(message);
+            const { error } = err.response.data;
+            setError(error);
             setRequestStatus("rejected");
         }
     }
@@ -46,7 +46,7 @@ const LoginPage = () => {
                 id="login"
                 onChange={null}
                 placeholder="e.g. mylogin"
-                error={error === "This login doesn't exists" && error}
+                error={error && error.path === "login" && error.message}
             >
                 Login
             </Control>
@@ -56,7 +56,7 @@ const LoginPage = () => {
                 id="password"
                 onChange={null}
                 placeholder="e.g. qwert12345"
-                error={error === "Invalid login or password" && error}
+                error={error && error.path === "password" && error.message}
             >
                 Password
             </Control>
@@ -66,7 +66,11 @@ const LoginPage = () => {
                 <Link className="form__link" to="/auth/register">Sign Up</Link>
             </span>
 
-            <Button type="submit" className="form__submit">
+            <Button 
+                type="submit" 
+                className="form__submit" 
+                isDisabled={requestStatus === 'loading'}
+            >
                 {requestStatus === "loading" ? <Loader /> : "Log In"}
             </Button>
         </AuthForm>

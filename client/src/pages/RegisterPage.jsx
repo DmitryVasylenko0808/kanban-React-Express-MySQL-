@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import axios from "../axios";
 import AuthForm from "../components/Forms/AuthForm.jsx";
 import Control from "../components/Control.jsx";
-import { Link, Navigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import Button from "../components/Button.jsx";
 import Loader from "../components/Loader.jsx";
 
 const RegisterPage = () => {
     const [requestStatus, setRequestStatus] = useState("idle");
-    const [error, setError] = useState("");
+    const [error, setError] = useState(null);
 
     const onSubmitHandle = async (e) => {
         e.preventDefault();
@@ -16,7 +16,8 @@ const RegisterPage = () => {
         const form = e.target;
         const data = {
             login: form.login.value,
-            password: form.password.value
+            password: form.password.value,
+            passwordConfirm: form.r_password.value
         };
 
         setRequestStatus('loading');
@@ -25,8 +26,8 @@ const RegisterPage = () => {
             localStorage.setItem("token", res.data.token);
             setRequestStatus("succeeded");
         } catch (err) {
-            const { message } = err.response.data;
-            setError(message);
+            const { error } = err.response.data;
+            setError(error);
             setRequestStatus("rejected");
         }
     }
@@ -43,9 +44,8 @@ const RegisterPage = () => {
             <Control
                 type="text"
                 id="login"
-                onChange={null}
                 placeholder="e.g. mylogin"
-                error={error}
+                error={error && error.path === "login" && error.message}
             >
                 Login
             </Control>
@@ -53,8 +53,8 @@ const RegisterPage = () => {
             <Control
                 type="text"
                 id="password"
-                onChange={null}
                 placeholder="e.g. qwert12345"
+                error={error && error.path === "password" && error.message}
             >
                 Password
             </Control>
@@ -62,13 +62,17 @@ const RegisterPage = () => {
             <Control
                 type="text"
                 id="r_password"
-                onChange={null}
                 placeholder="e.g. qwert12345"
+                error={error && error.path === "passwordConfirm" && error.message}
             >
                 Repeat Password
             </Control>
 
-            <Button type="submit" className="form__submit">
+            <Button 
+                type="submit" 
+                className="form__submit"
+                isDisabled={requestStatus === "loading" ? true : false}
+            >
                 {requestStatus === "loading" ? <Loader /> : "Registration"}
             </Button>
         </AuthForm>

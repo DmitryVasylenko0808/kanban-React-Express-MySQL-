@@ -1,0 +1,25 @@
+.column-task {
+    width: 100%;
+    padding: 26px 16px;
+    background-color: #40434fb8;
+    border-radius: 8px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    transition: all 0.2s;
+
+    cursor: pointer;
+
+    &:hover {
+        background-color: #4c4f5e;
+    }
+    &__title {
+        font-size: 20px;
+    }
+    &__count {
+        color: #ffffffa3;
+        font-size: 14px;
+    }
+}

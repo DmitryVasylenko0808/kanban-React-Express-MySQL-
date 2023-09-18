@@ -15,12 +15,14 @@ const BoardForm = () => {
     const theme = useSelector(selectTheme);
     const variant = useSelector(selectVariant);
     const boardId = useSelector(selectBoardId);
+    const error = useSelector(state => state.boards.error);
 
     const [boardName, setBoardName] = useState('');
     const [categories, setCategories] = useState([]);
     const [tasks, setTasks] = useState([]);
     const [subtasks, setSubtasks] = useState([]);
     const [requestStatus, setRequestStatus] = useState('idle');
+    const [editError, setEditError] = useState(null);
 
     const classNameForm = `form absolute ${theme}`;
     let title, titleSubmitBtn;
@@ -70,17 +72,14 @@ const BoardForm = () => {
 
     const addBoard = async () => {
         setRequestStatus('loading');
-        try {
-            const data = {
-                title: boardName,
-                columns: categories.map(c => c.value)
-            };
-            await dispatch(createBoard(data));
-        } catch (err) {
-            alert('Error');
-        } finally {
-            setRequestStatus('idle');
-        }
+
+        const data = {
+            title: boardName,
+            columns: categories.map(c => c.value)
+        };
+        await dispatch(createBoard(data));
+
+        setRequestStatus('idle');
     }
 
     const editBoard = async () => {
@@ -92,12 +91,13 @@ const BoardForm = () => {
                 tasks: tasks,
                 subtasks: subtasks
             };
-            console.log(data);
             await axios.put(`/boards/edit/${boardId}`, data);
             dispatch(fetchBoards());
             dispatch(fetchColumns(boardId));
+            setEditError(null);
         } catch (err) {
-            console.log(err);
+            const { error } = err.response.data;
+            setEditError(error);
         } finally {
             setRequestStatus('idle');
         }
@@ -154,6 +154,8 @@ const BoardForm = () => {
                 value={boardName}
                 onChange={e => onChangeBoardName(e)}
                 placeholder="e.g. Wish Design"
+                error={(error && error.path === "title" && error.message) 
+                    || (editError && editError.path === "title" && editError.message)}
             >
                 Board Name
             </Control>
@@ -164,6 +166,8 @@ const BoardForm = () => {
                 onAdd={addCategory}
                 onDeleteItem={deleteCategory}
                 onChangeItem={onChangeCategory}
+                error={(error && error.path === "columns" && error.message) 
+                    || (editError && editError.path === "columns" && editError.message)}
             />
 
             <Button

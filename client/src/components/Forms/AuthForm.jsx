@@ -22,7 +22,7 @@ const AuthForm = ({ variant, onSubmit, children }) => {
 
     return (
         <form className={classNameForm} onSubmit={onSubmit}>
-            <div className="form-heading">
+            <div className="form-heading authtype">
                 <img className={classNameImg} src={imgSrc} alt={altSrc} />
                 {title}
             </div>
